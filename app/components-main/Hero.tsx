@@ -565,7 +565,12 @@ export default function LandingPage() {
 
   const textVariants = { hidden: { opacity: 0, y: 30 }, visible: (delay: number) => ({ opacity: 1, y: 0, transition: { delay, duration: 0.6, ease: easeOut } }) };
   const getCarVariant = (index: number) => { const total = CAR_IMAGES.length; if (index === currentIndex) return 'active'; if (index === (currentIndex + 1) % total) return 'next'; if (index === (currentIndex - 1 + total) % total) return 'prev'; return 'hidden'; };
-  const carVariants = { next: { x: 240, y: -180, scale: 0.55, opacity: 0.5, zIndex: 5, filter: 'blur(3px) grayscale(100%)', transition: { duration: 0.8, ease: easeInOut } }, active: { x: 0, y: 0, scale: 1.15, opacity: 1, zIndex: 20, filter: 'blur(0px) grayscale(0%)', transition: { type: "spring", stiffness: 180, damping: 14 } }, prev: { x: 240, y: 180, scale: 0.55, opacity: 0.5, zIndex: 4, filter: 'blur(3px) grayscale(100%)', transition: { duration: 0.8, ease: easeInOut } }, hidden: { x: 350, y: 0, scale: 0, opacity: 0 } };
+  const carVariants = {
+    next: { x: 240, y: -180, scale: 0.55, opacity: 0.5, zIndex: 5, filter: 'blur(3px) grayscale(100%)', transition: { duration: 0.8, ease: easeInOut } },
+    active: { x: 0, y: 0, scale: 1.15, opacity: 1, zIndex: 20, filter: 'blur(0px) grayscale(0%)', transition: { type: "spring" as const, stiffness: 180, damping: 14 } },
+    prev: { x: 240, y: 180, scale: 0.55, opacity: 0.5, zIndex: 4, filter: 'blur(3px) grayscale(100%)', transition: { duration: 0.8, ease: easeInOut } },
+    hidden: { x: 350, y: 0, scale: 0, opacity: 0 }
+  } as const;
 
   return (
     <div className={`w-full ${getBackgroundColor()} ${getTextColor()} transition-colors duration-300`}>
