@@ -16,22 +16,21 @@ const TRENDING_VIDEOS = [
   { id: 8, title: "BMW Series", category: "Luxury", views: "3.7M", duration: "1:18", src: "/videos/bmw.mp4" },
 ];
 
-// FIXED: Capitalized filenames to match your GitHub repository EXACTLY
+// FIXED: Matching your EXACT folder structure (Mixed Case)
+// 1-6 are "Video" (Capital), 7-12 are "video" (Lowercase)
 const VINTAGE_VIDEOS = [
-  { id: 1, color: "#C41E3A", rating: "9.8", src: "/videos/Video1.mp4" },
-  { id: 2, color: "#0066CC", rating: "9.5", src: "/videos/Video2.mp4" },
-  { id: 3, color: "#FF4500", rating: "9.7", src: "/videos/Video3.mp4" },
-  { id: 4, color: "#FFD700", rating: "9.3", src: "/videos/Video4.mp4" },
-  { id: 5, color: "#228B22", rating: "9.6", src: "/videos/Video5.mp4" },
-  { id: 6, color: "#800080", rating: "9.4", src: "/videos/Video6.mp4" },
-  // Assuming these follow the pattern. If 7-12 are lowercase in your folder, change 'Video' to 'video' here.
-  // Based on your screenshot, only 1-6 were clearly visible, but consistency is key.
-  { id: 7, color: "#FF1493", rating: "9.9", src: "/videos/Video7.mp4" }, 
-  { id: 8, color: "#00CED1", rating: "9.8", src: "/videos/Video8.mp4" },
-  { id: 9, color: "#FF6347", rating: "9.5", src: "/videos/Video9.mp4" },
-  { id: 10, color: "#1E90FF", rating: "9.7", src: "/videos/Video10.mp4" },
-  { id: 11, color: "#DC143C", rating: "9.9", src: "/videos/Video11.mp4" },
-  { id: 12, color: "#32CD32", rating: "9.4", src: "/videos/Video12.mp4" },
+  { id: 1, color: "#C41E3A", rating: "9.8", src: "/videos/Video1.mp4" }, // Capital V
+  { id: 2, color: "#0066CC", rating: "9.5", src: "/videos/Video2.mp4" }, // Capital V
+  { id: 3, color: "#FF4500", rating: "9.7", src: "/videos/Video3.mp4" }, // Capital V
+  { id: 4, color: "#FFD700", rating: "9.3", src: "/videos/Video4.mp4" }, // Capital V
+  { id: 5, color: "#228B22", rating: "9.6", src: "/videos/Video5.mp4" }, // Capital V
+  { id: 6, color: "#800080", rating: "9.4", src: "/videos/Video6.mp4" }, // Capital V
+  { id: 7, color: "#FF1493", rating: "9.9", src: "/videos/video7.mp4" }, // Lowercase v
+  { id: 8, color: "#00CED1", rating: "9.8", src: "/videos/video8.mp4" }, // Lowercase v
+  { id: 9, color: "#FF6347", rating: "9.5", src: "/videos/video9.mp4" }, // Lowercase v
+  { id: 10, color: "#1E90FF", rating: "9.7", src: "/videos/video10.mp4" }, // Lowercase v
+  { id: 11, color: "#DC143C", rating: "9.9", src: "/videos/video11.mp4" }, // Lowercase v
+  { id: 12, color: "#32CD32", rating: "9.4", src: "/videos/video12.mp4" }, // Lowercase v
 ];
 
 const CHARACTERS = [
@@ -357,7 +356,7 @@ const ReviewSection = ({ theme }: { theme: 'dark' | 'light' }) => {
                  >
                     <div className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style={{ backgroundImage: `url(${photo})` }} />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                       <Maximize2 className="text-white md:size-[24px]" size={18} />
+                       <Maximize2 className="text-white" size={18} className="md:size-[24px]" />
                     </div>
                  </motion.div>
               ))}
