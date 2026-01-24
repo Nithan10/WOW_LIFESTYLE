@@ -375,8 +375,6 @@ const Footer = ({ theme }: { theme: 'dark' | 'light' }) => {
        </div>
 
        {/* 3D HANGING CAR ELEMENT - Breaking the Grid */}
-       {/* Positioned absolute at Top Center, Translated UP by 50% to hang on the border line */}
-       {/* UPDATED: Removed 'hidden md:block' to show on all screens. Adjusted width for mobile responsiveness. */}
        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] sm:w-[400px] md:w-[600px] pointer-events-none z-30 block">
           <motion.div 
              initial={{ y: -50, opacity: 0 }}
@@ -542,6 +540,7 @@ const StudioShowcase = ({ videos, theme }: { videos: typeof VINTAGE_VIDEOS, them
 export default function LandingPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [isMobile, setIsMobile] = useState(false); // New State for Mobile Detection
 
   useEffect(() => {
     const handleThemeChange = (e: CustomEvent) => setTheme(e.detail);
@@ -554,6 +553,14 @@ export default function LandingPage() {
     return () => { window.removeEventListener('themechange', handleThemeChange as EventListener); observer.disconnect(); };
   }, []);
 
+  // Responsive Check Effect
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile(); // Check on mount
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   useEffect(() => { const interval = setInterval(() => { setCurrentIndex((prev) => (prev + 1) % CAR_IMAGES.length); }, 3500); return () => clearInterval(interval); }, []);
 
   const getBackgroundColor = () => theme === 'light' ? 'bg-white' : 'bg-black';
@@ -564,12 +571,44 @@ export default function LandingPage() {
   const getSectionBackground = () => theme === 'light' ? 'bg-gradient-to-b from-gray-50 to-white' : 'bg-gradient-to-b from-[#0a0a0a] to-black';
 
   const textVariants = { hidden: { opacity: 0, y: 30 }, visible: (delay: number) => ({ opacity: 1, y: 0, transition: { delay, duration: 0.6, ease: easeOut } }) };
+  
   const getCarVariant = (index: number) => { const total = CAR_IMAGES.length; if (index === currentIndex) return 'active'; if (index === (currentIndex + 1) % total) return 'next'; if (index === (currentIndex - 1 + total) % total) return 'prev'; return 'hidden'; };
+  
+  // UPDATED CAR VARIANTS FOR MOBILE
   const carVariants = {
-    next: { x: 240, y: -180, scale: 0.55, opacity: 0.5, zIndex: 5, filter: 'blur(3px) grayscale(100%)', transition: { duration: 0.8, ease: easeInOut } },
-    active: { x: 0, y: 0, scale: 1.15, opacity: 1, zIndex: 20, filter: 'blur(0px) grayscale(0%)', transition: { type: "spring" as const, stiffness: 180, damping: 14 } },
-    prev: { x: 240, y: 180, scale: 0.55, opacity: 0.5, zIndex: 4, filter: 'blur(3px) grayscale(100%)', transition: { duration: 0.8, ease: easeInOut } },
-    hidden: { x: 350, y: 0, scale: 0, opacity: 0 }
+    next: { 
+        x: isMobile ? 0 : 240, // Mobile: Stack behind instead of offset
+        y: isMobile ? -30 : -180, 
+        scale: isMobile ? 0.8 : 0.55, 
+        opacity: 0.5, 
+        zIndex: 5, 
+        filter: 'blur(3px) grayscale(100%)', 
+        transition: { duration: 0.8, ease: easeInOut } 
+    },
+    active: { 
+        x: 0, 
+        y: 0, 
+        scale: isMobile ? 1 : 1.15, // Mobile: Smaller scale to fit width
+        opacity: 1, 
+        zIndex: 20, 
+        filter: 'blur(0px) grayscale(0%)', 
+        transition: { type: "spring" as const, stiffness: 180, damping: 14 } 
+    },
+    prev: { 
+        x: isMobile ? 0 : 240, // Mobile: Stack behind
+        y: isMobile ? 30 : 180, 
+        scale: isMobile ? 0.8 : 0.55, 
+        opacity: 0.5, 
+        zIndex: 4, 
+        filter: 'blur(3px) grayscale(100%)', 
+        transition: { duration: 0.8, ease: easeInOut } 
+    },
+    hidden: { 
+        x: isMobile ? 50 : 350, // Mobile: Reduced offset to prevent overflow
+        y: 0, 
+        scale: 0, 
+        opacity: 0 
+    }
   } as const;
 
   return (
@@ -581,7 +620,7 @@ export default function LandingPage() {
         <div className="flex-grow flex items-center">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div className="flex flex-col justify-center text-center lg:text-left z-10">
+              <div className="flex flex-col justify-center text-center lg:text-left z-10 order-2 lg:order-1">
                 <motion.div custom={0} initial="hidden" animate="visible" variants={textVariants} className="flex justify-center lg:justify-start mb-6">
                   <span className="px-4 py-2 rounded-full border border-[#D4AF37]/50 bg-gradient-to-r from-[#D4AF37]/10 to-transparent text-[#D4AF37] text-sm font-bold tracking-wide flex items-center gap-2"><Trophy size={16} /> OFFICIAL F1 COLLECTOR SERIES</span>
                 </motion.div>
@@ -592,9 +631,9 @@ export default function LandingPage() {
                   <button className={`px-8 py-4 ${theme === 'light' ? 'bg-gray-100 border-gray-300 text-gray-800 hover:bg-gray-200' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'} border font-bold text-lg rounded-xl transition-all duration-300 flex items-center justify-center gap-3`}>View Gallery <CarFront size={20} /></button>
                 </motion.div>
               </div>
-              <div className="relative h-[400px] lg:h-[600px] w-full flex items-center justify-center perspective-[1200px]">
+              <div className="relative h-[400px] lg:h-[600px] w-full flex items-center justify-center perspective-[1200px] order-1 lg:order-2">
                  <div className="absolute z-0 w-[300px] h-[300px] bg-gradient-to-br from-[#D4AF37]/10 to-transparent rounded-full blur-3xl" />
-                 {CAR_IMAGES.map((imgSrc, index) => { const variant = getCarVariant(index); if (variant === 'hidden') return null; return ( <motion.div key={index} variants={carVariants} initial="next" animate={variant} className="absolute w-full flex items-center justify-center origin-center" style={{ transformStyle: "preserve-3d" }}><motion.div className="relative" animate={variant === 'active' ? { y: [-8, 8, -8], transition: { duration: 5, repeat: Infinity, ease: easeInOut } } : {}}><img src={imgSrc} alt={`Vehicle ${index}`} className="w-full max-w-[500px] h-auto object-contain drop-shadow-[0_35px_60px_rgba(0,0,0,0.9)]" /></motion.div></motion.div> ); })}
+                 {CAR_IMAGES.map((imgSrc, index) => { const variant = getCarVariant(index); if (variant === 'hidden') return null; return ( <motion.div key={index} variants={carVariants} initial="next" animate={variant} className="absolute w-full flex items-center justify-center origin-center" style={{ transformStyle: "preserve-3d" }}><motion.div className="relative" animate={variant === 'active' ? { y: [-8, 8, -8], transition: { duration: 5, repeat: Infinity, ease: easeInOut } } : {}}><img src={imgSrc} alt={`Vehicle ${index}`} className="w-full max-w-[320px] md:max-w-[500px] h-auto object-contain drop-shadow-[0_35px_60px_rgba(0,0,0,0.9)]" /></motion.div></motion.div> ); })}
               </div>
             </div>
           </div>
