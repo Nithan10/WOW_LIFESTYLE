@@ -19,18 +19,18 @@ const TRENDING_VIDEOS = [
 
 // FIXED: Capitalized filenames to match your GitHub repository ('Video1.mp4' vs 'video1.mp4')
 const VINTAGE_VIDEOS = [
-  { id: 1, color: "#C41E3A", rating: "9.8", src: "/videos/Video1.mp4" },
-  { id: 2, color: "#0066CC", rating: "9.5", src: "/videos/Video2.mp4" },
-  { id: 3, color: "#FF4500", rating: "9.7", src: "/videos/Video3.mp4" },
-  { id: 4, color: "#FFD700", rating: "9.3", src: "/videos/Video4.mp4" },
-  { id: 5, color: "#228B22", rating: "9.6", src: "/videos/Video5.mp4" },
-  { id: 6, color: "#800080", rating: "9.4", src: "/videos/Video6.mp4" },
-  { id: 7, color: "#FF1493", rating: "9.9", src: "/videos/Video7.mp4" }, // Assuming Video7+ also follow the Capital V pattern
-  { id: 8, color: "#00CED1", rating: "9.8", src: "/videos/Video8.mp4" },
-  { id: 9, color: "#FF6347", rating: "9.5", src: "/videos/Video9.mp4" },
-  { id: 10, color: "#1E90FF", rating: "9.7", src: "/videos/Video10.mp4" },
-  { id: 11, color: "#DC143C", rating: "9.9", src: "/videos/Video11.mp4" },
-  { id: 12, color: "#32CD32", rating: "9.4", src: "/videos/Video12.mp4" },
+  { id: 1, color: "#C41E3A", rating: "9.8", src: "/videos/video1.mp4" },
+  { id: 2, color: "#0066CC", rating: "9.5", src: "/videos/video2.mp4" },
+  { id: 3, color: "#FF4500", rating: "9.7", src: "/videos/video3.mp4" },
+  { id: 4, color: "#FFD700", rating: "9.3", src: "/videos/video4.mp4" },
+  { id: 5, color: "#228B22", rating: "9.6", src: "/videos/video5.mp4" },
+  { id: 6, color: "#800080", rating: "9.4", src: "/videos/video6.mp4" },
+  { id: 7, color: "#FF1493", rating: "9.9", src: "/videos/video7.mp4" }, // Assuming Video7+ also follow the Capital V pattern
+  { id: 8, color: "#00CED1", rating: "9.8", src: "/videos/video8.mp4" },
+  { id: 9, color: "#FF6347", rating: "9.5", src: "/videos/video9.mp4" },
+  { id: 10, color: "#1E90FF", rating: "9.7", src: "/videos/video10.mp4" },
+  { id: 11, color: "#DC143C", rating: "9.9", src: "/videos/video11.mp4" },
+  { id: 12, color: "#32CD32", rating: "9.4", src: "/videos/video12.mp4" },
 ];
 
 const CHARACTERS = [
