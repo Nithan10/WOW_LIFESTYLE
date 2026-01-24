@@ -356,7 +356,7 @@ const ReviewSection = ({ theme }: { theme: 'dark' | 'light' }) => {
                  >
                     <div className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style={{ backgroundImage: `url(${photo})` }} />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                       <Maximize2 className="text-white" size={18} className="md:size-[24px]" />
+                       <Maximize2 className="text-white md:size-[24px]" size={18} />
                     </div>
                  </motion.div>
               ))}
