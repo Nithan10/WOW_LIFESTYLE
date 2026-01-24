@@ -5,32 +5,33 @@ import { motion, easeInOut, easeOut, AnimatePresence } from 'framer-motion';
 import { ArrowRight, CarFront, Trophy, Play, Pause, Volume2, VolumeX, ChevronLeft, ChevronRight, Maximize2, Sparkles, Star, Gift, Rocket, Brain, Music, Palette, Bot, Gamepad2, MessageSquare, User, Twitter, Instagram, Facebook, Youtube, Send, Mail, Zap } from 'lucide-react';
 
 // --- ASSETS CONFIGURATION ---
-// CHECK: Ensure these filenames match your 'public/videos' folder EXACTLY (including capitalization)
 const TRENDING_VIDEOS = [
   { id: 1, title: "F1 Racing Collection", category: "Premium", views: "2.4M", duration: "0:45", src: "/videos/f1.mp4" },
   { id: 2, title: "Hot Wheels Ultimate", category: "Limited", views: "1.8M", duration: "1:10", src: "/videos/hotwheels.mp4" },
   { id: 3, title: "JRC Heavy Duty", category: "Exclusive", views: "3.2M", duration: "0:38", src: "/videos/jcb.mp4" },
   { id: 4, title: "RC Speedsters", category: "Elite", views: "4.1M", duration: "1:25", src: "/videos/rc.mp4" },
   { id: 5, title: "Micro Racers", category: "Collector's", views: "1.2M", duration: "0:52", src: "/videos/minirc.mp4" },
-  { id: 6, title: "Aero Drones", category: "Tech", views: "5.3M", duration: "1:30", src: "/videos/drone.mp4" }, // Matches 'drone.mp4' in screenshot
+  { id: 6, title: "Aero Drones", category: "Tech", views: "5.3M", duration: "1:30", src: "/videos/drone.mp4" },
   { id: 7, title: "Moto RC Pro", category: "Sport", views: "2.9M", duration: "1:05", src: "/videos/rcbike.mp4" },
-  { id: 8, title: "BMW Series", category: "Luxury", views: "3.7M", duration: "1:18", src: "/videos/bmw.mp4" }, // Matches 'bmw.mp4' in screenshot
+  { id: 8, title: "BMW Series", category: "Luxury", views: "3.7M", duration: "1:18", src: "/videos/bmw.mp4" },
 ];
 
-// FIXED: Capitalized filenames to match your GitHub repository ('Video1.mp4' vs 'video1.mp4')
+// FIXED: Capitalized filenames to match your GitHub repository EXACTLY
 const VINTAGE_VIDEOS = [
-  { id: 1, color: "#C41E3A", rating: "9.8", src: "/videos/video1.mp4" },
-  { id: 2, color: "#0066CC", rating: "9.5", src: "/videos/video2.mp4" },
-  { id: 3, color: "#FF4500", rating: "9.7", src: "/videos/video3.mp4" },
-  { id: 4, color: "#FFD700", rating: "9.3", src: "/videos/video4.mp4" },
-  { id: 5, color: "#228B22", rating: "9.6", src: "/videos/video5.mp4" },
-  { id: 6, color: "#800080", rating: "9.4", src: "/videos/video6.mp4" },
-  { id: 7, color: "#FF1493", rating: "9.9", src: "/videos/video7.mp4" }, // Assuming Video7+ also follow the Capital V pattern
-  { id: 8, color: "#00CED1", rating: "9.8", src: "/videos/video8.mp4" },
-  { id: 9, color: "#FF6347", rating: "9.5", src: "/videos/video9.mp4" },
-  { id: 10, color: "#1E90FF", rating: "9.7", src: "/videos/video10.mp4" },
-  { id: 11, color: "#DC143C", rating: "9.9", src: "/videos/video11.mp4" },
-  { id: 12, color: "#32CD32", rating: "9.4", src: "/videos/video12.mp4" },
+  { id: 1, color: "#C41E3A", rating: "9.8", src: "/videos/Video1.mp4" },
+  { id: 2, color: "#0066CC", rating: "9.5", src: "/videos/Video2.mp4" },
+  { id: 3, color: "#FF4500", rating: "9.7", src: "/videos/Video3.mp4" },
+  { id: 4, color: "#FFD700", rating: "9.3", src: "/videos/Video4.mp4" },
+  { id: 5, color: "#228B22", rating: "9.6", src: "/videos/Video5.mp4" },
+  { id: 6, color: "#800080", rating: "9.4", src: "/videos/Video6.mp4" },
+  // Assuming these follow the pattern. If 7-12 are lowercase in your folder, change 'Video' to 'video' here.
+  // Based on your screenshot, only 1-6 were clearly visible, but consistency is key.
+  { id: 7, color: "#FF1493", rating: "9.9", src: "/videos/Video7.mp4" }, 
+  { id: 8, color: "#00CED1", rating: "9.8", src: "/videos/Video8.mp4" },
+  { id: 9, color: "#FF6347", rating: "9.5", src: "/videos/Video9.mp4" },
+  { id: 10, color: "#1E90FF", rating: "9.7", src: "/videos/Video10.mp4" },
+  { id: 11, color: "#DC143C", rating: "9.9", src: "/videos/Video11.mp4" },
+  { id: 12, color: "#32CD32", rating: "9.4", src: "/videos/Video12.mp4" },
 ];
 
 const CHARACTERS = [
