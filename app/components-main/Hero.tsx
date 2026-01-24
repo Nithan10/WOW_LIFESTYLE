@@ -5,30 +5,32 @@ import { motion, easeInOut, easeOut, AnimatePresence } from 'framer-motion';
 import { ArrowRight, CarFront, Trophy, Play, Pause, Volume2, VolumeX, ChevronLeft, ChevronRight, Maximize2, Sparkles, Star, Gift, Rocket, Brain, Music, Palette, Bot, Gamepad2, MessageSquare, User, Twitter, Instagram, Facebook, Youtube, Send, Mail, Zap } from 'lucide-react';
 
 // --- ASSETS CONFIGURATION ---
+// CHECK: Ensure these filenames match your 'public/videos' folder EXACTLY (including capitalization)
 const TRENDING_VIDEOS = [
   { id: 1, title: "F1 Racing Collection", category: "Premium", views: "2.4M", duration: "0:45", src: "/videos/f1.mp4" },
   { id: 2, title: "Hot Wheels Ultimate", category: "Limited", views: "1.8M", duration: "1:10", src: "/videos/hotwheels.mp4" },
   { id: 3, title: "JRC Heavy Duty", category: "Exclusive", views: "3.2M", duration: "0:38", src: "/videos/jcb.mp4" },
   { id: 4, title: "RC Speedsters", category: "Elite", views: "4.1M", duration: "1:25", src: "/videos/rc.mp4" },
   { id: 5, title: "Micro Racers", category: "Collector's", views: "1.2M", duration: "0:52", src: "/videos/minirc.mp4" },
-  { id: 6, title: "Aero Drones", category: "Tech", views: "5.3M", duration: "1:30", src: "/videos/drone.mp4" },
+  { id: 6, title: "Aero Drones", category: "Tech", views: "5.3M", duration: "1:30", src: "/videos/drone.mp4" }, // Matches 'drone.mp4' in screenshot
   { id: 7, title: "Moto RC Pro", category: "Sport", views: "2.9M", duration: "1:05", src: "/videos/rcbike.mp4" },
-  { id: 8, title: "BMW Series", category: "Luxury", views: "3.7M", duration: "1:18", src: "/videos/bmw.mp4" },
+  { id: 8, title: "BMW Series", category: "Luxury", views: "3.7M", duration: "1:18", src: "/videos/bmw.mp4" }, // Matches 'bmw.mp4' in screenshot
 ];
 
+// FIXED: Capitalized filenames to match your GitHub repository ('Video1.mp4' vs 'video1.mp4')
 const VINTAGE_VIDEOS = [
-  { id: 1, color: "#C41E3A", rating: "9.8", src: "/videos/video1.mp4" },
-  { id: 2, color: "#0066CC", rating: "9.5", src: "/videos/video2.mp4" },
-  { id: 3, color: "#FF4500", rating: "9.7", src: "/videos/video3.mp4" },
-  { id: 4, color: "#FFD700", rating: "9.3", src: "/videos/video4.mp4" },
-  { id: 5, color: "#228B22", rating: "9.6", src: "/videos/video5.mp4" },
-  { id: 6, color: "#800080", rating: "9.4", src: "/videos/video6.mp4" },
-  { id: 7, color: "#FF1493", rating: "9.9", src: "/videos/video7.mp4" },
-  { id: 8, color: "#00CED1", rating: "9.8", src: "/videos/video8.mp4" },
-  { id: 9, color: "#FF6347", rating: "9.5", src: "/videos/video9.mp4" },
-  { id: 10, color: "#1E90FF", rating: "9.7", src: "/videos/video10.mp4" },
-  { id: 11, color: "#DC143C", rating: "9.9", src: "/videos/video11.mp4" },
-  { id: 12, color: "#32CD32", rating: "9.4", src: "/videos/video12.mp4" },
+  { id: 1, color: "#C41E3A", rating: "9.8", src: "/videos/Video1.mp4" },
+  { id: 2, color: "#0066CC", rating: "9.5", src: "/videos/Video2.mp4" },
+  { id: 3, color: "#FF4500", rating: "9.7", src: "/videos/Video3.mp4" },
+  { id: 4, color: "#FFD700", rating: "9.3", src: "/videos/Video4.mp4" },
+  { id: 5, color: "#228B22", rating: "9.6", src: "/videos/Video5.mp4" },
+  { id: 6, color: "#800080", rating: "9.4", src: "/videos/Video6.mp4" },
+  { id: 7, color: "#FF1493", rating: "9.9", src: "/videos/Video7.mp4" }, // Assuming Video7+ also follow the Capital V pattern
+  { id: 8, color: "#00CED1", rating: "9.8", src: "/videos/Video8.mp4" },
+  { id: 9, color: "#FF6347", rating: "9.5", src: "/videos/Video9.mp4" },
+  { id: 10, color: "#1E90FF", rating: "9.7", src: "/videos/Video10.mp4" },
+  { id: 11, color: "#DC143C", rating: "9.9", src: "/videos/Video11.mp4" },
+  { id: 12, color: "#32CD32", rating: "9.4", src: "/videos/Video12.mp4" },
 ];
 
 const CHARACTERS = [
@@ -354,7 +356,7 @@ const ReviewSection = ({ theme }: { theme: 'dark' | 'light' }) => {
                  >
                     <div className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style={{ backgroundImage: `url(${photo})` }} />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                       <Maximize2 className="text-white md:size-[24px]" size={18} />
+                       <Maximize2 className="text-white" size={18} className="md:size-[24px]" />
                     </div>
                  </motion.div>
               ))}
@@ -589,8 +591,8 @@ export default function LandingPage() {
     },
     active: { 
         x: 0, 
-        y: 0, 
-        scale: isMobile ? 0.9 : 1.15, // Mobile: Smaller scale to fit width
+        y: isMobile ? 10 : 0, // Slight push down on mobile
+        scale: isMobile ? 0.85 : 1.15, // Mobile: Scaled down slightly more (0.9 -> 0.85) to fit width
         opacity: 1, 
         zIndex: 20, 
         filter: 'blur(0px) grayscale(0%)', 
@@ -606,7 +608,7 @@ export default function LandingPage() {
         transition: { duration: 0.8, ease: easeInOut } 
     },
     hidden: { 
-        x: isMobile ? 30 : 350, // Mobile: Reduced offset to prevent overflow
+        x: isMobile ? 0 : 350, // Mobile: Zero offset to prevent overflow
         y: 0, 
         scale: 0, 
         opacity: 0 
@@ -616,13 +618,16 @@ export default function LandingPage() {
   return (
     <div className={`w-full ${getBackgroundColor()} ${getTextColor()} transition-colors duration-300`}>
       {/* HERO SECTION */}
-      <section className={`relative min-h-screen overflow-hidden flex flex-col justify-center pt-16 md:pt-24 lg:pt-32 pb-12 md:pb-20`}>
+      {/* FIX: Increased top padding for mobile (pt-32) to prevent Navbar overlap */}
+      <section className={`relative min-h-screen overflow-hidden flex flex-col justify-center pt-32 md:pt-24 lg:pt-32 pb-12 md:pb-20`}>
         <div className="absolute right-[-20%] md:right-[-10%] top-[20%] w-[300px] h-[300px] md:w-[600px] md:h-[600px] bg-gradient-to-br from-[#D4AF37]/20 to-transparent blur-[80px] md:blur-[150px] rounded-full pointer-events-none -z-10" />
         <div className={`absolute inset-0 ${getGridColor()} bg-[size:16px_16px] md:bg-[size:24px_24px] -z-20`}></div>
         <div className="flex-grow flex items-center">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
-              <div className="flex flex-col justify-center text-center lg:text-left z-10 order-2 lg:order-1">
+              
+              {/* FIX: Removed order-2 for mobile. Text comes first in code, so it will now appear FIRST on mobile naturally. */}
+              <div className="flex flex-col justify-center text-center lg:text-left z-10 lg:order-1">
                 <motion.div custom={0} initial="hidden" animate="visible" variants={textVariants} className="flex justify-center lg:justify-start mb-4 md:mb-6">
                   <span className="px-3 py-1.5 md:px-4 md:py-2 rounded-full border border-[#D4AF37]/50 bg-gradient-to-r from-[#D4AF37]/10 to-transparent text-[#D4AF37] text-xs md:text-sm font-bold tracking-wide flex items-center gap-2"><Trophy size={14} className="md:size-[16px]" /> OFFICIAL F1 COLLECTOR SERIES</span>
                 </motion.div>
@@ -633,7 +638,9 @@ export default function LandingPage() {
                   <button className={`px-6 py-3 md:px-8 md:py-4 ${theme === 'light' ? 'bg-gray-100 border-gray-300 text-gray-800 hover:bg-gray-200' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'} border font-bold text-base md:text-lg rounded-lg md:rounded-xl transition-all duration-300 flex items-center justify-center gap-2 md:gap-3`}>View Gallery <CarFront size={18} className="md:size-[20px]" /></button>
                 </motion.div>
               </div>
-              <div className="relative h-[300px] md:h-[400px] lg:h-[600px] w-full flex items-center justify-center perspective-[800px] md:perspective-[1200px] order-1 lg:order-2">
+
+              {/* FIX: Removed order-1 for mobile. Images are second in code, so they will now appear SECOND on mobile naturally. */}
+              <div className="relative h-[250px] md:h-[400px] lg:h-[600px] w-full flex items-center justify-center perspective-[800px] md:perspective-[1200px] lg:order-2">
                  <div className="absolute z-0 w-[200px] h-[200px] md:w-[300px] md:h-[300px] bg-gradient-to-br from-[#D4AF37]/10 to-transparent rounded-full blur-2xl md:blur-3xl" />
                  {CAR_IMAGES.map((imgSrc, index) => { const variant = getCarVariant(index); if (variant === 'hidden') return null; return ( <motion.div key={index} variants={carVariants} initial="next" animate={variant} className="absolute w-full flex items-center justify-center origin-center" style={{ transformStyle: "preserve-3d" }}><motion.div className="relative" animate={variant === 'active' ? { y: [-8, 8, -8], transition: { duration: 5, repeat: Infinity, ease: easeInOut } } : {}}><img src={imgSrc} alt={`Vehicle ${index}`} className="w-full max-w-[240px] md:max-w-[320px] lg:max-w-[500px] h-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)] md:drop-shadow-[0_35px_60px_rgba(0,0,0,0.9)]" /></motion.div></motion.div> ); })}
               </div>
