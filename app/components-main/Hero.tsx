@@ -678,7 +678,7 @@ const Footer = ({ theme }: { theme: 'dark' | 'light' }) => {
              className="relative"
           >
              <img 
-               src="/pngcar.png" 
+               src="/pngcar2.png" 
                alt="F1 Car" 
                className="w-full h-auto drop-shadow-[0_15px_30px_rgba(0,0,0,0.6)] md:drop-shadow-[0_25px_50px_rgba(0,0,0,0.6)]" 
              />
