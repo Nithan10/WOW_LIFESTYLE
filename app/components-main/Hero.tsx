@@ -2,18 +2,15 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, easeInOut, easeOut, AnimatePresence } from 'framer-motion';
-import { ArrowRight, CarFront, Trophy, Play, Pause, Volume2, VolumeX, ChevronLeft, ChevronRight, Maximize2, Sparkles, Star, Gift, Rocket, Brain, Music, Palette, Bot, Gamepad2, MessageSquare, User, Twitter, Instagram, Facebook, Youtube, Send, Mail, Zap } from 'lucide-react';
+import { ArrowRight, CarFront, Trophy, Play, Pause, Volume2, VolumeX, ChevronLeft, ChevronRight, Maximize2, Sparkles, Star, Gift, Rocket, Brain, Music, Palette, Bot, Gamepad2, MessageSquare, User, Twitter, Instagram, Facebook, Youtube, Send, Mail, Zap, ShoppingBag, Heart, Baby, School, GraduationCap, Building2, Wand2, Gauge, X, CheckCircle2, Check } from 'lucide-react';
 
 // --- CLOUDINARY CONFIGURATION ---
-// Based on your screenshot, your cloud name seems to be 'duh5z2zjr'.
-// 'f_auto,q_auto' asks Cloudinary to automatically optimize format and quality.
 const CLOUD_NAME = "duh5z2zjr"; 
 const FOLDER_NAME = "wow-lifestyle";
 const CLOUD_BASE = `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/f_auto,q_auto/${FOLDER_NAME}`;
 
 // --- ASSETS CONFIGURATION ---
 const TRENDING_VIDEOS = [
-  // Ensure these file names match EXACTLY what is in your Cloudinary folder
   { id: 1, title: "F1 Racing Collection", category: "Premium", views: "2.4M", duration: "0:45", src: `https://res.cloudinary.com/duh5z2zjr/video/upload/v1769314436/f1_tn2jwq.mp4` },
   { id: 2, title: "Hot Wheels Ultimate", category: "Limited", views: "1.8M", duration: "1:10", src: `https://res.cloudinary.com/duh5z2zjr/video/upload/v1769314438/hotwheels_wdsfha.mp4` },
   { id: 3, title: "JRC Heavy Duty", category: "Exclusive", views: "3.2M", duration: "0:38", src: `https://res.cloudinary.com/duh5z2zjr/video/upload/v1769314438/jcb_qbokn9.mp4` },
@@ -25,8 +22,6 @@ const TRENDING_VIDEOS = [
 ];
 
 const VINTAGE_VIDEOS = [
-  // I saw "video10_m4fote" in your screenshot. Make sure other files are named similarly in Cloudinary.
-  // If your files in Cloudinary are just "Video1", "Video2", use those names here.
   { id: 1, color: "#C41E3A", rating: "9.8", src: `https://res.cloudinary.com/duh5z2zjr/video/upload/v1769314454/video8_vkzvjt.mp4` }, 
   { id: 2, color: "#0066CC", rating: "9.5", src: `https://res.cloudinary.com/duh5z2zjr/video/upload/v1769314452/video7_pyrylo.mp4` }, 
   { id: 3, color: "#FF4500", rating: "9.7", src: `https://res.cloudinary.com/duh5z2zjr/video/upload/v1769314454/video11_v67zbd.mp4` }, 
@@ -36,7 +31,7 @@ const VINTAGE_VIDEOS = [
   { id: 7, color: "#FF1493", rating: "9.9", src: `https://res.cloudinary.com/duh5z2zjr/video/upload/v1769314454/video10_m4fote.mp4` }, 
   { id: 8, color: "#00CED1", rating: "9.8", src: `https://res.cloudinary.com/duh5z2zjr/video/upload/v1769314452/video7_pyrylo.mp4` }, 
   { id: 9, color: "#FF6347", rating: "9.5", src: `https://res.cloudinary.com/duh5z2zjr/video/upload/v1769314451/Video5_jhnqnb.mp4` }, 
-  { id: 10, color: "#1E90FF", rating: "9.7", src: `https://res.cloudinary.com/duh5z2zjr/video/upload/v1769314445/Video1_sfmwkt.mp4` }, // Updated based on screenshot
+  { id: 10, color: "#1E90FF", rating: "9.7", src: `https://res.cloudinary.com/duh5z2zjr/video/upload/v1769314445/Video1_sfmwkt.mp4` }, 
   { id: 11, color: "#DC143C", rating: "9.9", src: `https://res.cloudinary.com/duh5z2zjr/video/upload/v1769314457/video13_rl4rr0.mp4` }, 
   { id: 12, color: "#32CD32", rating: "9.4", src: `https://res.cloudinary.com/duh5z2zjr/video/upload/v1769314455/video12_cpuv4p.mp4` }, 
 ];
@@ -67,6 +62,25 @@ const BRAND_LOGOS = [
   { name: "Super Heroes", src: "/logos/superheroes.png" },
 ];
 
+const BEST_SELLERS = [
+    { id: 1, name: "Jasco Bear Muffler", price: 1499, original: 1599, discount: "6% OFF", img: "/chars/Masha.avif" },
+    { id: 2, name: "Hamleys Activity Ball", price: 2699, original: 3599, discount: "25% OFF", img: "/chars/pokemon.avif" },
+    { id: 3, name: "Marvel Avengers Set", price: 799, original: 999, discount: "20% OFF", img: "/chars/avengers.avif" },
+    { id: 4, name: "Hot Wheels Monster", price: 1099, original: 1299, discount: "15% OFF", img: "/chars/car3.png" },
+    { id: 5, name: "Super Rigs Transporter", price: 849, original: 999, discount: "15% OFF", img: "/chars/car2.png" },
+];
+
+const AGE_GROUPS = [
+    { id: 1, label: "0-18 Months", sub: "Infant Care", img: "/chars/Masha.avif", gradient: "from-pink-500 to-rose-600", icon: <Baby /> },
+    { id: 2, label: "18-36 Months", sub: "Toddler Fun", img: "/chars/mickey.avif", gradient: "from-cyan-500 to-blue-600", icon: <Star /> },
+    { id: 3, label: "3-5 Years", sub: "Preschool", img: "/chars/pokemon.avif", gradient: "from-amber-400 to-orange-600", icon: <Building2 /> },
+    { id: 4, label: "5-7 Years", sub: "Action Hero", img: "/chars/spiderman.avif", gradient: "from-red-600 to-red-800", icon: <Zap /> },
+    { id: 5, label: "7-9 Years", sub: "Dreamers", img: "/chars/barbie.avif", gradient: "from-fuchsia-500 to-purple-600", icon: <Sparkles /> },
+    { id: 6, label: "9-12 Years", sub: "Racers", img: "/chars/car3.png", gradient: "from-orange-500 to-red-600", icon: <Gauge /> },
+    { id: 7, label: "12-14 Years", sub: "Speed Freak", img: "/pngcar.png", gradient: "from-slate-800 to-black", icon: <Trophy /> },
+    { id: 8, label: "14-16 Years", sub: "Wizardry", img: "/chars/harrypotter.avif", gradient: "from-purple-800 to-indigo-900", icon: <Wand2 /> },
+];
+
 const BENTO_ITEMS = [
   { id: 1, title: "Iconic Heroes", subtitle: "Legends Assemble", className: "md:col-span-1 md:row-span-2", img: "/chars/dead.avif", icon: <Star className="text-yellow-400" size={20} />, color: "#C41E3A" },
   { id: 2, title: "Holiday Bestsellers", subtitle: "Trending Now", className: "md:col-span-2 md:row-span-2", img: `https://res.cloudinary.com/duh5z2zjr/video/upload/v1769314414/car_x8lshu.mp4`, isVideo: true, icon: <Gift className="text-purple-400" size={20} />, color: "#800080" },
@@ -90,6 +104,96 @@ const REVIEWS = [
 const CUSTOMER_PHOTOS = [
   '/chars/dead.avif', '/chars/car1.png', '/chars/car2.png', '/chars/car3.png', '/chars/spiderman.avif'
 ];
+
+// --- LOGIN MODAL COMPONENT ---
+const LoginModal = ({ isOpen, onClose, onGetOtp }: { isOpen: boolean; onClose: () => void; onGetOtp: () => void }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }} 
+        animate={{ opacity: 1, scale: 1 }} 
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-white rounded-3xl p-6 md:p-10 w-full max-w-md relative shadow-2xl"
+      >
+        <button 
+          onClick={onClose} 
+          className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors"
+        >
+          <X size={24} className="text-gray-500" />
+        </button>
+
+        <div className="text-center mb-8 mt-2">
+           {/* FIXED: Added 'text-black' to ensure visibility in all themes since card is white */}
+           <h2 className="text-3xl font-black mb-3 tracking-tight text-black">WOW LIFESTYLE</h2>
+           <p className="text-gray-500 text-sm font-medium">Enter Mobile Number, then accept T&C to continue</p>
+        </div>
+
+        <div className="space-y-6">
+          {/* Mobile Input */}
+          <div className="relative">
+            <label className="text-xs text-gray-500 absolute -top-2 left-3 bg-white px-1">Mobile *</label>
+            <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden h-12 focus-within:border-black transition-colors">
+              <div className="flex items-center gap-2 px-3 border-r border-gray-300 bg-gray-50/50">
+                <img src="https://flagcdn.com/w20/in.png" alt="India" className="w-5 h-auto rounded-sm" />
+                <span className="text-sm font-bold text-gray-700">+91</span>
+              </div>
+              <input 
+                type="tel" 
+                className="flex-1 h-full px-4 outline-none text-black font-medium placeholder-gray-400"
+                placeholder="Enter your number"
+              />
+            </div>
+          </div>
+
+          {/* Button - Trigger onGetOtp */}
+          <button 
+            onClick={onGetOtp}
+            className="w-full py-3.5 bg-[#C0C0C0] text-white font-bold rounded-lg text-sm tracking-wide hover:bg-[#D4AF37] transition-colors shadow-sm"
+          >
+            GET OTP
+          </button>
+
+          {/* T&C */}
+          <div className="flex items-start gap-3 mt-4">
+            <div className="relative flex items-center">
+              <input type="checkbox" id="terms" className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-gray-300 shadow transition-all checked:border-black checked:bg-black hover:shadow-md" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100 pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" strokeWidth="1">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path>
+                </svg>
+              </div>
+            </div>
+            <label htmlFor="terms" className="text-xs text-gray-500 leading-relaxed cursor-pointer select-none">
+              By continuing, I agree to the <span className="underline decoration-gray-400 underline-offset-2 hover:text-black">Terms of Service</span> & <span className="underline decoration-gray-400 underline-offset-2 hover:text-black">Privacy Policy</span>
+            </label>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  )
+}
+
+// --- TOAST NOTIFICATION COMPONENT ---
+const Toast = ({ message, onClose }: { message: string, onClose: () => void }) => {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: -50, x: "-50%" }}
+      animate={{ opacity: 1, y: 0, x: "-50%" }}
+      exit={{ opacity: 0, y: -50, x: "-50%" }}
+      className="fixed top-10 left-1/2 z-[11000] flex items-center gap-3 bg-[#D4AF37] text-black px-6 py-3 rounded-full shadow-2xl font-bold tracking-wide"
+    >
+      <CheckCircle2 size={20} className="text-white" fill="black" />
+      {message}
+    </motion.div>
+  );
+};
 
 // --- VIDEO CARD COMPONENT ---
 const VideoCard = ({ video, index, theme }: { video: typeof TRENDING_VIDEOS[0], index: number, theme: 'dark' | 'light' }) => {
@@ -143,7 +247,6 @@ const VideoCard = ({ video, index, theme }: { video: typeof TRENDING_VIDEOS[0], 
       className={`group relative ${getCardGradient()} rounded-2xl overflow-hidden cursor-pointer shadow-lg md:shadow-2xl border ${getBorderColor()} transition-all duration-500`}
     >
       <div className="relative w-full aspect-[9/16] overflow-hidden">
-        {/* FIXED: Cloudinary Optimization */}
         <video 
           ref={videoRef} 
           autoPlay 
@@ -178,6 +281,139 @@ const VideoCard = ({ video, index, theme }: { video: typeof TRENDING_VIDEOS[0], 
       </div>
     </motion.div>
   );
+};
+
+// --- BEST SELLERS COMPONENT ---
+const BestSellers = ({ theme, onOpenLogin }: { theme: 'dark' | 'light', onOpenLogin: () => void }) => {
+    return (
+        <section className={`py-12 md:py-20 relative ${theme === 'light' ? 'bg-gray-50' : 'bg-[#0a0a0a]'} border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/5'}`}>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex justify-between items-end mb-8 md:mb-12">
+                    <div>
+                        <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} className="flex items-center gap-2 mb-3">
+                            <Zap size={14} className="md:size-[16px] text-[#D4AF37]" />
+                            <span className="text-[#D4AF37] font-bold tracking-[0.2em] text-xs uppercase">Top Picks</span>
+                        </motion.div>
+                        <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} className={`text-3xl md:text-5xl font-black uppercase tracking-tight ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                            Best <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#FCEEAC]">Sellers</span>
+                        </motion.h2>
+                    </div>
+                    <div className="flex gap-2">
+                        <button className={`p-2 rounded-full border ${theme === 'light' ? 'border-gray-300 hover:bg-gray-200 text-gray-900' : 'border-white/10 hover:bg-white/10 text-white'}`}>
+                            <ChevronLeft size={20} />
+                        </button>
+                        <button className={`p-2 rounded-full border ${theme === 'light' ? 'border-gray-300 hover:bg-gray-200 text-gray-900' : 'border-white/10 hover:bg-white/10 text-white'}`}>
+                            <ChevronRight size={20} />
+                        </button>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+                    {BEST_SELLERS.map((item, index) => (
+                        <motion.div
+                            key={item.id}
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                            className={`group relative rounded-xl overflow-hidden border ${theme === 'light' ? 'bg-white border-gray-200' : 'bg-[#121212] border-white/10'}`}
+                        >
+                            {/* Product Image */}
+                            <div className={`relative aspect-square p-6 flex items-center justify-center ${theme === 'light' ? 'bg-gray-100' : 'bg-[#1a1a1a]'}`}>
+                                <motion.img 
+                                    src={item.img} 
+                                    alt={item.name} 
+                                    className="w-full h-full object-contain drop-shadow-xl group-hover:scale-110 transition-transform duration-500" 
+                                />
+                                {/* FAVORITE ICON - TRIGGERS LOGIN POPUP */}
+                                <div 
+                                  onClick={onOpenLogin}
+                                  className="absolute top-3 right-3 p-2 rounded-full bg-black/10 hover:bg-[#D4AF37] hover:text-white transition-colors cursor-pointer backdrop-blur-sm"
+                                >
+                                    <Heart size={16} className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`} />
+                                </div>
+                                {item.discount && (
+                                    <div className="absolute top-3 left-3 bg-[#D4AF37] text-black text-[10px] font-bold px-2 py-1 rounded-md">
+                                        {item.discount}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Product Details */}
+                            <div className="p-4">
+                                <h3 className={`font-bold text-sm md:text-base mb-1 line-clamp-1 ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>{item.name}</h3>
+                                <div className="flex items-center gap-2 mb-3">
+                                    <span className={`font-black text-lg ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>₹{item.price}</span>
+                                    {item.original && (
+                                        <span className="text-xs text-gray-500 line-through">₹{item.original}</span>
+                                    )}
+                                </div>
+                                <button className={`w-full py-2 rounded-lg text-xs md:text-sm font-bold flex items-center justify-center gap-2 transition-all ${theme === 'light' ? 'bg-gray-900 text-white hover:bg-[#D4AF37] hover:text-black' : 'bg-white text-black hover:bg-[#D4AF37]'}`}>
+                                    <ShoppingBag size={14} /> Add to Bag
+                                </button>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+};
+
+// --- REDESIGNED SHOP BY AGE COMPONENT ---
+const ShopByAge = ({ theme }: { theme: 'dark' | 'light' }) => {
+    return (
+        <section className={`py-12 md:py-24 relative overflow-hidden ${theme === 'light' ? 'bg-white' : 'bg-black'} border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/5'}`}>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div className="text-center mb-10 md:mb-16">
+                    <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#D4AF37]/30 bg-[#D4AF37]/5 mb-3">
+                        <Star size={12} className="text-[#D4AF37]" fill="#D4AF37" />
+                        <span className="text-[#D4AF37] text-[10px] font-bold tracking-widest uppercase">Find Perfect Gift</span>
+                    </motion.div>
+                    <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} className={`text-3xl md:text-5xl font-black uppercase tracking-tight ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                        Shop By <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#FCEEAC]">Age</span>
+                    </motion.h2>
+                </div>
+
+                <div className="flex flex-wrap justify-center gap-6 md:gap-8 pb-8">
+                    {AGE_GROUPS.map((age, i) => (
+                        <motion.div
+                            key={age.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.1 }}
+                            whileHover={{ y: -10 }}
+                            className="relative flex-shrink-0 w-[160px] md:w-[220px] aspect-[4/5] rounded-[2rem] overflow-hidden cursor-pointer group shadow-xl"
+                        >
+                            {/* Colorful Gradient Background */}
+                            <div className={`absolute inset-0 bg-gradient-to-b ${age.gradient} opacity-90 transition-opacity duration-300`} />
+                            
+                            <div className="absolute inset-0 flex flex-col p-4">
+                                {/* Top Image Section */}
+                                <div className="relative w-full aspect-square bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center overflow-hidden mb-4 shadow-inner border border-white/10 group-hover:bg-white/30 transition-colors">
+                                    <motion.img 
+                                        src={age.img} 
+                                        alt={age.label} 
+                                        className="w-4/5 h-4/5 object-contain drop-shadow-md" 
+                                        whileHover={{ scale: 1.15 }}
+                                        transition={{ type: "spring", stiffness: 200 }}
+                                    />
+                                </div>
+
+                                {/* Bottom Content Section */}
+                                <div className="flex-1 flex flex-col items-center justify-end pb-2">
+                                    <div className="text-white mb-2 opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300">
+                                        {React.cloneElement(age.icon as React.ReactElement, { size: 20 } as any)}
+                                    </div>
+                                    <h3 className="text-white font-black text-lg md:text-xl uppercase leading-tight text-center drop-shadow-sm tracking-wide">{age.label}</h3>
+                                    <p className="text-white/80 text-[10px] md:text-xs font-bold uppercase tracking-widest mt-1 text-center">{age.sub}</p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
 };
 
 // --- CHARACTER SLIDER COMPONENT ---
@@ -248,7 +484,6 @@ const BentoGrid = ({ theme }: { theme: 'dark' | 'light' }) => {
                 >
                    <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105">
                       {item.isVideo ? (
-                         // FIXED: Cloudinary Optimization
                          <video 
                             src={item.img} 
                             className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" 
@@ -397,45 +632,33 @@ const ReviewSection = ({ theme }: { theme: 'dark' | 'light' }) => {
 // --- NEW 3D FOOTER COMPONENT ---
 const Footer = ({ theme }: { theme: 'dark' | 'light' }) => {
   return (
-    // IMPORTANT: overflow must NOT be hidden here for the car to hang outside (above) the footer container
     <footer className={`relative pt-24 md:pt-32 pb-8 md:pb-12 ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-[#050505] text-white'}`}>
-       
-       {/* Background Grid Pattern (Clipped inside absolute div) */}
        <div className="absolute inset-0 overflow-hidden pointer-events-none">
          <div className={`absolute inset-0 opacity-[0.03] ${theme === 'light' ? 'bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)]' : 'bg-[linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)]'} bg-[size:20px_20px] md:bg-[size:40px_40px]`} />
        </div>
-
-       {/* 3D HANGING CAR ELEMENT - Breaking the Grid */}
        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] sm:w-[300px] md:w-[400px] lg:w-[600px] pointer-events-none z-30 block">
           <motion.div 
              initial={{ y: -50, opacity: 0 }}
              whileInView={{ y: 0, opacity: 1 }}
              transition={{ duration: 1, type: "spring" }}
-             // Subtle floating/levitation animation
              animate={{ y: [0, 15, 0] }}
              // @ts-ignore
              transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
              className="relative"
           >
-             {/* Main Car Image */}
              <img 
-               src="/pngcar.png" 
+               src="/pngcar2.png" 
                alt="F1 Car" 
                className="w-full h-auto drop-shadow-[0_15px_30px_rgba(0,0,0,0.6)] md:drop-shadow-[0_25px_50px_rgba(0,0,0,0.6)]" 
              />
-             
-             {/* Optional: Glow/Spotlight effect behind the car to emphasize depth */}
              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[50%] bg-[#D4AF37]/20 blur-[40px] md:blur-[60px] rounded-full -z-10" />
           </motion.div>
        </div>
 
        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-12 md:pt-0">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12 mb-12 md:mb-20">
-             
-             {/* Brand Column */}
              <div className="col-span-1 md:col-span-1">
                 <div className="flex items-center gap-3 mb-4 md:mb-6">
-                   {/* Replaced Icon with Logo Image */}
                    <div className="w-10 h-10 md:w-12 md:h-12 relative rounded-full overflow-hidden border border-[#D4AF37]/50 shadow-[0_0_10px_rgba(212,175,55,0.3)] md:shadow-[0_0_15px_rgba(212,175,55,0.3)]">
                       <img 
                         src="/wow-logo.png" 
@@ -456,8 +679,6 @@ const Footer = ({ theme }: { theme: 'dark' | 'light' }) => {
                    ))}
                 </div>
              </div>
-
-             {/* Links Columns */}
              <div>
                 <h4 className="font-bold mb-4 md:mb-6 text-[#D4AF37] uppercase tracking-wider text-xs">Company</h4>
                 <ul className={`space-y-3 md:space-y-4 text-xs md:text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
@@ -466,7 +687,6 @@ const Footer = ({ theme }: { theme: 'dark' | 'light' }) => {
                    ))}
                 </ul>
              </div>
-
              <div>
                 <h4 className="font-bold mb-4 md:mb-6 text-[#D4AF37] uppercase tracking-wider text-xs">Support</h4>
                 <ul className={`space-y-3 md:space-y-4 text-xs md:text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
@@ -475,8 +695,6 @@ const Footer = ({ theme }: { theme: 'dark' | 'light' }) => {
                    ))}
                 </ul>
              </div>
-
-             {/* Newsletter Column */}
              <div>
                 <h4 className="font-bold mb-4 md:mb-6 text-[#D4AF37] uppercase tracking-wider text-xs">Stay in the Lead</h4>
                 <p className={`text-xs md:text-sm mb-3 md:mb-4 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
@@ -495,7 +713,6 @@ const Footer = ({ theme }: { theme: 'dark' | 'light' }) => {
                 </div>
              </div>
           </div>
-
           <div className={`pt-6 md:pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4 ${theme === 'light' ? 'border-gray-200 text-gray-500' : 'border-white/10 text-gray-500'}`}>
              <p className="text-[10px] md:text-xs text-center md:text-left">© 2024 WOW Lifestyle. All rights reserved.</p>
              <div className="flex gap-4 md:gap-6 text-[10px] md:text-xs">
@@ -536,7 +753,6 @@ const StudioShowcase = ({ videos, theme }: { videos: typeof VINTAGE_VIDEOS, them
         <div className="absolute inset-0 bg-black">
            <AnimatePresence mode='wait'>
             <motion.div key={activeVideo.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.8 }} className="w-full h-full">
-              {/* FIXED: Uses Cloudinary src, added crossOrigin and proper type */}
               <video src={activeVideo.src} className="w-full h-full object-cover" autoPlay muted playsInline loop crossOrigin="anonymous" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none opacity-80" />
             </motion.div>
@@ -573,6 +789,8 @@ export default function LandingPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [isMobile, setIsMobile] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     const handleThemeChange = (e: CustomEvent) => setTheme(e.detail);
@@ -585,10 +803,9 @@ export default function LandingPage() {
     return () => { window.removeEventListener('themechange', handleThemeChange as EventListener); observer.disconnect(); };
   }, []);
 
-  // Responsive Check Effect
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
-    checkMobile(); // Check on mount
+    checkMobile(); 
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
@@ -606,10 +823,9 @@ export default function LandingPage() {
   
   const getCarVariant = (index: number) => { const total = CAR_IMAGES.length; if (index === currentIndex) return 'active'; if (index === (currentIndex + 1) % total) return 'next'; if (index === (currentIndex - 1 + total) % total) return 'prev'; return 'hidden'; };
   
-  // UPDATED CAR VARIANTS FOR MOBILE
   const carVariants = {
     next: { 
-        x: isMobile ? 0 : 240, // Mobile: Stack behind instead of offset
+        x: isMobile ? 0 : 240, 
         y: isMobile ? -20 : -180, 
         scale: isMobile ? 0.7 : 0.55, 
         opacity: 0.5, 
@@ -619,15 +835,15 @@ export default function LandingPage() {
     },
     active: { 
         x: 0, 
-        y: isMobile ? 10 : 0, // Slight push down on mobile
-        scale: isMobile ? 0.85 : 1.15, // Mobile: Scaled down slightly more (0.9 -> 0.85) to fit width
+        y: isMobile ? 10 : 0, 
+        scale: isMobile ? 0.85 : 1.15, 
         opacity: 1, 
         zIndex: 20, 
         filter: 'blur(0px) grayscale(0%)', 
         transition: { type: "spring" as const, stiffness: 180, damping: 14 } 
     },
     prev: { 
-        x: isMobile ? 0 : 240, // Mobile: Stack behind
+        x: isMobile ? 0 : 240, 
         y: isMobile ? 20 : 180, 
         scale: isMobile ? 0.7 : 0.55, 
         opacity: 0.5, 
@@ -636,7 +852,7 @@ export default function LandingPage() {
         transition: { duration: 0.8, ease: easeInOut } 
     },
     hidden: { 
-        x: isMobile ? 0 : 350, // Mobile: Zero offset to prevent overflow
+        x: isMobile ? 0 : 350, 
         y: 0, 
         scale: 0, 
         opacity: 0 
@@ -645,8 +861,28 @@ export default function LandingPage() {
 
   return (
     <div className={`w-full ${getBackgroundColor()} ${getTextColor()} transition-colors duration-300`}>
+      {/* TOAST NOTIFICATION */}
+      <AnimatePresence>
+        {showToast && (
+          <Toast message="OTP Sent Successfully!" onClose={() => setShowToast(false)} />
+        )}
+      </AnimatePresence>
+
+      {/* LOGIN POPUP */}
+      <AnimatePresence>
+        {isLoginOpen && (
+          <LoginModal 
+            isOpen={isLoginOpen} 
+            onClose={() => setIsLoginOpen(false)} 
+            onGetOtp={() => {
+              setIsLoginOpen(false); // Close Modal
+              setShowToast(true);    // Show Success Message
+            }}
+          />
+        )}
+      </AnimatePresence>
+
       {/* HERO SECTION */}
-      {/* FIX: Increased top padding for mobile (pt-32) to prevent Navbar overlap */}
       <section className={`relative min-h-screen overflow-hidden flex flex-col justify-center pt-32 md:pt-24 lg:pt-32 pb-12 md:pb-20`}>
         <div className="absolute right-[-20%] md:right-[-10%] top-[20%] w-[300px] h-[300px] md:w-[600px] md:h-[600px] bg-gradient-to-br from-[#D4AF37]/20 to-transparent blur-[80px] md:blur-[150px] rounded-full pointer-events-none -z-10" />
         <div className={`absolute inset-0 ${getGridColor()} bg-[size:16px_16px] md:bg-[size:24px_24px] -z-20`}></div>
@@ -654,7 +890,6 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
               
-              {/* FIX: Removed order-2 for mobile. Text comes first in code, so it will now appear FIRST on mobile naturally. */}
               <div className="flex flex-col justify-center text-center lg:text-left z-10 lg:order-1">
                 <motion.div custom={0} initial="hidden" animate="visible" variants={textVariants} className="flex justify-center lg:justify-start mb-4 md:mb-6">
                   <span className="px-3 py-1.5 md:px-4 md:py-2 rounded-full border border-[#D4AF37]/50 bg-gradient-to-r from-[#D4AF37]/10 to-transparent text-[#D4AF37] text-xs md:text-sm font-bold tracking-wide flex items-center gap-2"><Trophy size={14} className="md:size-[16px]" /> OFFICIAL F1 COLLECTOR SERIES</span>
@@ -667,7 +902,6 @@ export default function LandingPage() {
                 </motion.div>
               </div>
 
-              {/* FIX: Removed order-1 for mobile. Images are second in code, so they will now appear SECOND on mobile naturally. */}
               <div className="relative h-[250px] md:h-[400px] lg:h-[600px] w-full flex items-center justify-center perspective-[800px] md:perspective-[1200px] lg:order-2">
                  <div className="absolute z-0 w-[200px] h-[200px] md:w-[300px] md:h-[300px] bg-gradient-to-br from-[#D4AF37]/10 to-transparent rounded-full blur-2xl md:blur-3xl" />
                  {CAR_IMAGES.map((imgSrc, index) => { const variant = getCarVariant(index); if (variant === 'hidden') return null; return ( <motion.div key={index} variants={carVariants} initial="next" animate={variant} className="absolute w-full flex items-center justify-center origin-center" style={{ transformStyle: "preserve-3d" }}><motion.div className="relative" animate={variant === 'active' ? { y: [-8, 8, -8], transition: { duration: 5, repeat: Infinity, ease: easeInOut } } : {}}><img src={imgSrc} alt={`Vehicle ${index}`} className="w-full max-w-[240px] md:max-w-[320px] lg:max-w-[500px] h-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)] md:drop-shadow-[0_35px_60px_rgba(0,0,0,0.9)]" /></motion.div></motion.div> ); })}
@@ -718,6 +952,11 @@ export default function LandingPage() {
           <StudioShowcase videos={VINTAGE_VIDEOS} theme={theme} />
           
           <CharacterSlider theme={theme} />
+
+          <BestSellers theme={theme} onOpenLogin={() => setIsLoginOpen(true)} />
+
+          {/* NEW SHOP BY AGE SECTION ADDED HERE */}
+          <ShopByAge theme={theme} />
 
           <BentoGrid theme={theme} />
           
