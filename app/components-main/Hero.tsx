@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, easeInOut, easeOut, AnimatePresence } from 'framer-motion';
-import { ArrowRight, CarFront, Trophy, Play, Pause, Volume2, VolumeX, ChevronLeft, ChevronRight, Maximize2, Sparkles, Star, Gift, Rocket, Brain, Music, Palette, Bot, Gamepad2, MessageSquare, User, Twitter, Instagram, Facebook, Youtube, Send, Mail, Zap, ShoppingBag, Heart, Baby, School, GraduationCap, Building2, Wand2, Gauge, X, CheckCircle2, Check } from 'lucide-react';
+import { ArrowRight, CarFront, Trophy, Play, Pause, Volume2, VolumeX, ChevronLeft, ChevronRight, Maximize2, Sparkles, Star, Gift, Rocket, Brain, Music, Palette, Bot, Gamepad2, MessageSquare, User, Twitter, Instagram, Facebook, Youtube, Send, Mail, Zap, ShoppingBag, Heart, Baby, School, GraduationCap, Building2, Wand2, Gauge, X, CheckCircle2, Check, MapPin } from 'lucide-react';
 
 // --- CLOUDINARY CONFIGURATION ---
 const CLOUD_NAME = "duh5z2zjr"; 
@@ -63,11 +63,11 @@ const BRAND_LOGOS = [
 ];
 
 const BEST_SELLERS = [
-    { id: 1, name: "Jasco Bear Muffler", price: 1499, original: 1599, discount: "6% OFF", img: "/chars/Masha.avif" },
-    { id: 2, name: "Hamleys Activity Ball", price: 2699, original: 3599, discount: "25% OFF", img: "/chars/pokemon.avif" },
-    { id: 3, name: "Marvel Avengers Set", price: 799, original: 999, discount: "20% OFF", img: "/chars/avengers.avif" },
-    { id: 4, name: "Hot Wheels Monster", price: 1099, original: 1299, discount: "15% OFF", img: "/chars/car3.png" },
-    { id: 5, name: "Super Rigs Transporter", price: 849, original: 999, discount: "15% OFF", img: "/chars/car2.png" },
+    { id: 1, name: "Jasco Bear Muffler", price: 1499, original: 1599, discount: "6% OFF", img: "/chars/Masha.avif", color: "bg-pink-900" },
+    { id: 2, name: "Hamleys Activity Ball", price: 2699, original: 3599, discount: "25% OFF", img: "/chars/pokemon.avif", color: "bg-yellow-900" },
+    { id: 3, name: "Marvel Avengers Set", price: 799, original: 999, discount: "20% OFF", img: "/chars/avengers.avif", color: "bg-red-900" },
+    { id: 4, name: "Hot Wheels Monster", price: 1099, original: 1299, discount: "15% OFF", img: "/chars/car3.png", color: "bg-blue-900" },
+    { id: 5, name: "Super Rigs Transporter", price: 849, original: 999, discount: "15% OFF", img: "/chars/car2.png", color: "bg-slate-900" },
 ];
 
 const AGE_GROUPS = [
@@ -125,13 +125,11 @@ const LoginModal = ({ isOpen, onClose, onGetOtp }: { isOpen: boolean; onClose: (
         </button>
 
         <div className="text-center mb-8 mt-2">
-           {/* FIXED: Added 'text-black' to ensure visibility in all themes since card is white */}
            <h2 className="text-3xl font-black mb-3 tracking-tight text-black">WOW LIFESTYLE</h2>
            <p className="text-gray-500 text-sm font-medium">Enter Mobile Number, then accept T&C to continue</p>
         </div>
 
         <div className="space-y-6">
-          {/* Mobile Input */}
           <div className="relative">
             <label className="text-xs text-gray-500 absolute -top-2 left-3 bg-white px-1">Mobile *</label>
             <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden h-12 focus-within:border-black transition-colors">
@@ -147,7 +145,6 @@ const LoginModal = ({ isOpen, onClose, onGetOtp }: { isOpen: boolean; onClose: (
             </div>
           </div>
 
-          {/* Button - Trigger onGetOtp */}
           <button 
             onClick={onGetOtp}
             className="w-full py-3.5 bg-[#C0C0C0] text-white font-bold rounded-lg text-sm tracking-wide hover:bg-[#D4AF37] transition-colors shadow-sm"
@@ -155,7 +152,6 @@ const LoginModal = ({ isOpen, onClose, onGetOtp }: { isOpen: boolean; onClose: (
             GET OTP
           </button>
 
-          {/* T&C */}
           <div className="flex items-start gap-3 mt-4">
             <div className="relative flex items-center">
               <input type="checkbox" id="terms" className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-gray-300 shadow transition-all checked:border-black checked:bg-black hover:shadow-md" />
@@ -283,11 +279,34 @@ const VideoCard = ({ video, index, theme }: { video: typeof TRENDING_VIDEOS[0], 
   );
 };
 
-// --- BEST SELLERS COMPONENT ---
+// --- NEW EXPANDABLE BEST SELLERS COMPONENT (Video Style) ---
 const BestSellers = ({ theme, onOpenLogin }: { theme: 'dark' | 'light', onOpenLogin: () => void }) => {
+    const [activeCard, setActiveCard] = useState(0);
+    const [progress, setProgress] = useState(0);
+    const CYCLE_DURATION = 4000; // 4 seconds per slide
+
+    // Auto-cycle logic
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setActiveCard((prev) => (prev + 1) % BEST_SELLERS.length);
+            setProgress(0); // Reset progress on change
+        }, CYCLE_DURATION);
+
+        const progressInterval = setInterval(() => {
+            setProgress((prev) => prev + (100 / (CYCLE_DURATION / 50)));
+        }, 50);
+
+        return () => {
+            clearInterval(interval);
+            clearInterval(progressInterval);
+        };
+    }, [activeCard]);
+
     return (
-        <section className={`py-12 md:py-20 relative ${theme === 'light' ? 'bg-gray-50' : 'bg-[#0a0a0a]'} border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/5'}`}>
+        <section className={`py-12 md:py-24 relative ${theme === 'light' ? 'bg-gray-50' : 'bg-[#0a0a0a]'} border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/5'} overflow-hidden`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                
+                {/* Section Header */}
                 <div className="flex justify-between items-end mb-8 md:mb-12">
                     <div>
                         <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} className="flex items-center gap-2 mb-3">
@@ -298,61 +317,73 @@ const BestSellers = ({ theme, onOpenLogin }: { theme: 'dark' | 'light', onOpenLo
                             Best <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#FCEEAC]">Sellers</span>
                         </motion.h2>
                     </div>
-                    <div className="flex gap-2">
-                        <button className={`p-2 rounded-full border ${theme === 'light' ? 'border-gray-300 hover:bg-gray-200 text-gray-900' : 'border-white/10 hover:bg-white/10 text-white'}`}>
-                            <ChevronLeft size={20} />
-                        </button>
-                        <button className={`p-2 rounded-full border ${theme === 'light' ? 'border-gray-300 hover:bg-gray-200 text-gray-900' : 'border-white/10 hover:bg-white/10 text-white'}`}>
-                            <ChevronRight size={20} />
-                        </button>
-                    </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-                    {BEST_SELLERS.map((item, index) => (
-                        <motion.div
-                            key={item.id}
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            className={`group relative rounded-xl overflow-hidden border ${theme === 'light' ? 'bg-white border-gray-200' : 'bg-[#121212] border-white/10'}`}
-                        >
-                            {/* Product Image */}
-                            <div className={`relative aspect-square p-6 flex items-center justify-center ${theme === 'light' ? 'bg-gray-100' : 'bg-[#1a1a1a]'}`}>
-                                <motion.img 
-                                    src={item.img} 
-                                    alt={item.name} 
-                                    className="w-full h-full object-contain drop-shadow-xl group-hover:scale-110 transition-transform duration-500" 
-                                />
-                                {/* FAVORITE ICON - TRIGGERS LOGIN POPUP */}
-                                <div 
-                                  onClick={onOpenLogin}
-                                  className="absolute top-3 right-3 p-2 rounded-full bg-black/10 hover:bg-[#D4AF37] hover:text-white transition-colors cursor-pointer backdrop-blur-sm"
-                                >
-                                    <Heart size={16} className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`} />
+                {/* Expandable Slider */}
+                <div className="flex flex-col md:flex-row gap-4 h-[500px] w-full">
+                    {BEST_SELLERS.map((item, index) => {
+                        const isActive = index === activeCard;
+                        return (
+                            <motion.div
+                                key={item.id}
+                                layout
+                                onClick={() => { setActiveCard(index); setProgress(0); }}
+                                className={`relative rounded-3xl overflow-hidden cursor-pointer transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${isActive ? 'flex-[3] shadow-2xl' : 'flex-[1] grayscale hover:grayscale-0'}`}
+                            >
+                                {/* Background Image & Color Fallback */}
+                                <div className={`absolute inset-0 ${item.color || 'bg-gray-900'}`}>
+                                    <div className="absolute inset-0 bg-black/40" /> {/* Dark overlay */}
+                                    <img 
+                                        src={item.img} 
+                                        alt={item.name} 
+                                        className={`w-full h-full object-cover transition-transform duration-1000 ${isActive ? 'scale-110' : 'scale-100'}`}
+                                    />
                                 </div>
-                                {item.discount && (
-                                    <div className="absolute top-3 left-3 bg-[#D4AF37] text-black text-[10px] font-bold px-2 py-1 rounded-md">
-                                        {item.discount}
-                                    </div>
-                                )}
-                            </div>
 
-                            {/* Product Details */}
-                            <div className="p-4">
-                                <h3 className={`font-bold text-sm md:text-base mb-1 line-clamp-1 ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>{item.name}</h3>
-                                <div className="flex items-center gap-2 mb-3">
-                                    <span className={`font-black text-lg ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>₹{item.price}</span>
-                                    {item.original && (
-                                        <span className="text-xs text-gray-500 line-through">₹{item.original}</span>
+                                {/* Content Overlay */}
+                                <div className="absolute inset-0 p-6 flex flex-col justify-between z-10">
+                                    {/* Top: Header */}
+                                    <div className="flex justify-between items-start">
+                                        <div className={`transition-opacity duration-300 ${isActive ? 'opacity-100' : 'opacity-0 md:opacity-100'}`}>
+                                            <h3 className={`text-white font-black uppercase tracking-tighter leading-none ${isActive ? 'text-3xl md:text-4xl' : 'text-xl md:text-2xl [writing-mode:vertical-rl] rotate-180 md:[writing-mode:horizontal-tb] md:rotate-0'}`}>
+                                                {item.name.split(" ")[0]}
+                                            </h3>
+                                        </div>
+                                        <div 
+                                            onClick={(e) => { e.stopPropagation(); onOpenLogin(); }}
+                                            className={`p-3 rounded-full bg-white/10 backdrop-blur-md hover:bg-[#D4AF37] hover:text-white transition-all text-white ${isActive ? 'opacity-100' : 'opacity-0'}`}
+                                        >
+                                            <Heart size={20} />
+                                        </div>
+                                    </div>
+
+                                    {/* Bottom: Details (Only visible when active) */}
+                                    {isActive && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.2 }}
+                                            className="space-y-4"
+                                        >
+                                            <div>
+                                                <h4 className="text-white text-xl md:text-3xl font-bold leading-tight mb-2">{item.name}</h4>
+                                            </div>
+                                        </motion.div>
                                     )}
                                 </div>
-                                <button className={`w-full py-2 rounded-lg text-xs md:text-sm font-bold flex items-center justify-center gap-2 transition-all ${theme === 'light' ? 'bg-gray-900 text-white hover:bg-[#D4AF37] hover:text-black' : 'bg-white text-black hover:bg-[#D4AF37]'}`}>
-                                    <ShoppingBag size={14} /> Add to Bag
-                                </button>
-                            </div>
-                        </motion.div>
-                    ))}
+
+                                {/* Progress Bar (Only on active card) */}
+                                {isActive && (
+                                    <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-white/20">
+                                        <motion.div 
+                                            className="h-full bg-[#D4AF37]"
+                                            style={{ width: `${progress}%` }}
+                                        />
+                                    </div>
+                                )}
+                            </motion.div>
+                        );
+                    })}
                 </div>
             </div>
         </section>
@@ -647,7 +678,7 @@ const Footer = ({ theme }: { theme: 'dark' | 'light' }) => {
              className="relative"
           >
              <img 
-               src="/pngcar2.png" 
+               src="/pngcar.png" 
                alt="F1 Car" 
                className="w-full h-auto drop-shadow-[0_15px_30px_rgba(0,0,0,0.6)] md:drop-shadow-[0_25px_50px_rgba(0,0,0,0.6)]" 
              />
