@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, easeInOut, easeOut, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef, memo } from 'react';
+import { motion, easeInOut, easeOut, AnimatePresence, useInView } from 'framer-motion';
 import { 
   ArrowRight, CarFront, Trophy, Play, Pause, Volume2, VolumeX, 
   ChevronLeft, ChevronRight, Maximize2, Sparkles, Star, Gift, 
@@ -11,41 +11,41 @@ import {
   Wand2, Gauge, X, CheckCircle2, Check, MapPin, Flag 
 } from 'lucide-react';
 
-// --- RALLEYZ DATA (Updated with Alignment & Missing Props) ---
+// --- RALLEYZ DATA ---
 const RALLEYZ_ITEMS = [
   { 
     id: 1, 
-    title: "Big Volt Rover Remote Control Car", 
-    location: "Rocky Terrain",
-    img: "/pngcar.png", 
+    title: "Big Volt Rover", 
+    subtitle: "Remote Control Car",
+    location: "Off-Road Series", 
     bg: "/chars/bg1.avif" 
   },
   { 
     id: 2, 
-    title: "Land Rover Range Rover SUV", 
-    location: "Urban Jungle",
-    img: "/pngcar2.png", 
+    title: "Land Rover", 
+    subtitle: "Range Rover SUV",
+    location: "Luxury Edition",
     bg: "/chars/bg2.avif" 
   },
   { 
     id: 3, 
-    title: "X-Spray Monster 2.4 GHz Racer", 
-    location: "Dirt Track",
-    img: "/pngbike2.png", 
+    title: "X-Spray Monster", 
+    subtitle: "2.4 GHz Racer",
+    location: "Speedster",
     bg: "/chars/bg3.avif" 
   },
   { 
     id: 4, 
-    title: "Twisted Remote Control Stunt Car", 
-    location: "Stunt Arena",
-    img: "/pngcar3.png", 
+    title: "Twisted Stunt", 
+    subtitle: "Remote Control Car",
+    location: "Stunt Zone",
     bg: "/chars/bg4.avif" 
   },
   { 
     id: 5, 
-    title: "High Speed Undcad Off Roader",
-    location: "Sand Dunes",
-    img: "/pngcar4.png", 
+    title: "Undcad Off Roader", 
+    subtitle: "4x4 RC Truck",
+    location: "Mountain",
     bg: "/chars/bg5.avif" 
   },
 ];
@@ -146,12 +146,12 @@ const CUSTOMER_PHOTOS = [
   '/chars/dead.avif', '/chars/car1.png', '/chars/car2.png', '/chars/car3.png', '/chars/spiderman.avif'
 ];
 
-// --- LOGIN MODAL COMPONENT ---
-const LoginModal = ({ isOpen, onClose, onGetOtp }: { isOpen: boolean; onClose: () => void; onGetOtp: () => void }) => {
+// --- MEMOIZED LOGIN MODAL ---
+const LoginModal = memo(({ isOpen, onClose, onGetOtp }: { isOpen: boolean; onClose: () => void; onGetOtp: () => void }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 will-change-transform">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }} 
         animate={{ opacity: 1, scale: 1 }} 
@@ -210,10 +210,10 @@ const LoginModal = ({ isOpen, onClose, onGetOtp }: { isOpen: boolean; onClose: (
       </motion.div>
     </div>
   )
-}
+});
 
 // --- TOAST NOTIFICATION COMPONENT ---
-const Toast = ({ message, onClose }: { message: string, onClose: () => void }) => {
+const Toast = memo(({ message, onClose }: { message: string, onClose: () => void }) => {
   useEffect(() => {
     const timer = setTimeout(onClose, 3000);
     return () => clearTimeout(timer);
@@ -224,16 +224,16 @@ const Toast = ({ message, onClose }: { message: string, onClose: () => void }) =
       initial={{ opacity: 0, y: -50, x: "-50%" }}
       animate={{ opacity: 1, y: 0, x: "-50%" }}
       exit={{ opacity: 0, y: -50, x: "-50%" }}
-      className="fixed top-10 left-1/2 z-[11000] flex items-center gap-3 bg-[#D4AF37] text-black px-6 py-3 rounded-full shadow-2xl font-bold tracking-wide"
+      className="fixed top-10 left-1/2 z-[11000] flex items-center gap-3 bg-[#D4AF37] text-black px-6 py-3 rounded-full shadow-2xl font-bold tracking-wide will-change-transform"
     >
       <CheckCircle2 size={20} className="text-white" fill="black" />
       {message}
     </motion.div>
   );
-};
+});
 
-// --- VIDEO CARD COMPONENT ---
-const VideoCard = ({ video, index, theme }: { video: typeof TRENDING_VIDEOS[0], index: number, theme: 'dark' | 'light' }) => {
+// --- OPTIMIZED VIDEO CARD ---
+const VideoCard = memo(({ video, index, theme }: { video: typeof TRENDING_VIDEOS[0], index: number, theme: 'dark' | 'light' }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -241,12 +241,24 @@ const VideoCard = ({ video, index, theme }: { video: typeof TRENDING_VIDEOS[0], 
   const [isHovered, setIsHovered] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const togglePlay = () => {
+  // Performance: Only play video when it is in viewport
+  const isInView = useInView(containerRef, { margin: "0px 0px -100px 0px" });
+
+  useEffect(() => {
     if (videoRef.current) {
-      if (isPlaying) videoRef.current.pause();
-      else videoRef.current.play();
-      setIsPlaying(!isPlaying);
+        if (isInView && isPlaying) {
+            const playPromise = videoRef.current.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {});
+            }
+        } else {
+            videoRef.current.pause();
+        }
     }
+  }, [isInView, isPlaying]);
+
+  const togglePlay = () => {
+    setIsPlaying(!isPlaying);
   };
 
   const toggleMute = () => {
@@ -257,16 +269,18 @@ const VideoCard = ({ video, index, theme }: { video: typeof TRENDING_VIDEOS[0], 
   };
 
   useEffect(() => {
-    const updateProgress = () => {
-      if (videoRef.current) {
-        const current = videoRef.current.currentTime;
-        const duration = videoRef.current.duration;
-        setProgress((current / duration) * 100);
-      }
-    };
-    const interval = setInterval(updateProgress, 100);
+    let interval: NodeJS.Timeout;
+    if (isPlaying && isInView) {
+        interval = setInterval(() => {
+            if (videoRef.current) {
+                const current = videoRef.current.currentTime;
+                const duration = videoRef.current.duration || 1;
+                setProgress((current / duration) * 100);
+            }
+        }, 200); // Reduced frequency for performance
+    }
     return () => clearInterval(interval);
-  }, []);
+  }, [isPlaying, isInView]);
 
   const getCardGradient = () => theme === 'light' ? 'bg-gradient-to-br from-gray-50 to-gray-100' : 'bg-gradient-to-br from-neutral-900 to-black';
   const getBorderColor = () => theme === 'light' ? (isHovered ? 'border-[#B8860B]/50' : 'border-gray-200') : (isHovered ? 'border-[#D4AF37]/50' : 'border-white/10');
@@ -281,18 +295,18 @@ const VideoCard = ({ video, index, theme }: { video: typeof TRENDING_VIDEOS[0], 
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
       onClick={togglePlay}
-      className={`group relative ${getCardGradient()} rounded-2xl overflow-hidden cursor-pointer shadow-lg md:shadow-2xl border ${getBorderColor()} transition-all duration-500`}
+      className={`group relative ${getCardGradient()} rounded-2xl overflow-hidden cursor-pointer shadow-lg md:shadow-2xl border ${getBorderColor()} transition-all duration-500 will-change-transform`}
     >
       <div className="relative w-full aspect-[9/16] overflow-hidden">
         <video 
           ref={videoRef} 
-          autoPlay 
           muted={isMuted} 
           loop 
           playsInline 
+          preload="none"
           crossOrigin="anonymous"
           src={video.src} 
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 will-change-transform" 
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
         <motion.div animate={{ opacity: isHovered ? 0.3 : 0.1 }} className="absolute inset-0 bg-gradient-to-tr from-[#D4AF37]/20 via-transparent to-[#D4AF37]/10" />
@@ -312,55 +326,58 @@ const VideoCard = ({ video, index, theme }: { video: typeof TRENDING_VIDEOS[0], 
             <motion.div animate={{ width: `${progress}%` }} className="h-full bg-gradient-to-r from-[#D4AF37] to-[#FCEEAC]" />
           </div>
         </div>
-        <motion.div animate={{ scale: isPlaying ? (isHovered ? 1.1 : 0) : 1, opacity: isPlaying ? (isHovered ? 1 : 0) : 1 }} className="absolute inset-0 flex items-center justify-center">
+        <motion.div animate={{ scale: isPlaying ? (isHovered ? 1.1 : 0) : 1, opacity: isPlaying ? (isHovered ? 1 : 0) : 1 }} className="absolute inset-0 flex items-center justify-center pointer-events-none">
            <div className={`p-4 md:p-6 backdrop-blur-md rounded-xl md:rounded-2xl border ${theme === 'light' ? 'bg-white/80 border-gray-300' : 'bg-black/50 border-white/20'}`}>{isPlaying ? <Pause size={24} className="md:size-[32px]" /> : <Play size={24} className="md:size-[32px]" />}</div>
         </motion.div>
       </div>
     </motion.div>
   );
-};
+});
 
-// --- EXPANDABLE BEST SELLERS COMPONENT ---
-const BestSellers = ({ theme, onOpenLogin }: { theme: 'dark' | 'light', onOpenLogin: () => void }) => {
+// --- OPTIMIZED BEST SELLERS COMPONENT ---
+const BestSellers = memo(({ theme, onOpenLogin }: { theme: 'dark' | 'light', onOpenLogin: () => void }) => {
     const [activeCard, setActiveCard] = useState(0);
     const [progress, setProgress] = useState(0);
-    const CYCLE_DURATION = 4000; // 4 seconds per slide
+    const containerRef = useRef(null);
+    const isInView = useInView(containerRef, { margin: "0px 0px -200px 0px" });
+    const CYCLE_DURATION = 4000;
 
-    // Auto-cycle logic
     useEffect(() => {
+        if (!isInView) return; // Stop animation when not visible
+        
         const interval = setInterval(() => {
             setActiveCard((prev) => (prev + 1) % BEST_SELLERS.length);
-            setProgress(0); // Reset progress on change
+            setProgress(0);
         }, CYCLE_DURATION);
 
         const progressInterval = setInterval(() => {
-            setProgress((prev) => prev + (100 / (CYCLE_DURATION / 50)));
-        }, 50);
+            setProgress((prev) => {
+                if (prev >= 100) return 100;
+                return prev + (100 / (CYCLE_DURATION / 100)); // Smoother update
+            });
+        }, 100);
 
         return () => {
             clearInterval(interval);
             clearInterval(progressInterval);
         };
-    }, [activeCard]);
+    }, [activeCard, isInView]);
 
     return (
-        <section className={`py-12 md:py-24 relative ${theme === 'light' ? 'bg-gray-50' : 'bg-[#0a0a0a]'} border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/5'} overflow-hidden`}>
+        <section ref={containerRef} className={`py-12 md:py-24 relative ${theme === 'light' ? 'bg-gray-50' : 'bg-[#0a0a0a]'} border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/5'} overflow-hidden`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                
-                {/* Section Header */}
                 <div className="flex justify-between items-end mb-8 md:mb-12">
                     <div>
-                        <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} className="flex items-center gap-2 mb-3">
+                        <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="flex items-center gap-2 mb-3">
                             <Zap size={14} className="md:size-[16px] text-[#D4AF37]" />
                             <span className="text-[#D4AF37] font-bold tracking-[0.2em] text-xs uppercase">Top Picks</span>
                         </motion.div>
-                        <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} className={`text-3xl md:text-5xl font-black uppercase tracking-tight ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                        <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`text-3xl md:text-5xl font-black uppercase tracking-tight ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                             Best <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#FCEEAC]">Sellers</span>
                         </motion.h2>
                     </div>
                 </div>
 
-                {/* Expandable Slider */}
                 <div className="flex flex-col md:flex-row gap-4 h-[500px] w-full">
                     {BEST_SELLERS.map((item, index) => {
                         const isActive = index === activeCard;
@@ -371,19 +388,17 @@ const BestSellers = ({ theme, onOpenLogin }: { theme: 'dark' | 'light', onOpenLo
                                 onClick={() => { setActiveCard(index); setProgress(0); }}
                                 className={`relative rounded-3xl overflow-hidden cursor-pointer transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${isActive ? 'flex-[3] shadow-2xl' : 'flex-[1] grayscale hover:grayscale-0'}`}
                             >
-                                {/* Background Image & Color Fallback */}
                                 <div className={`absolute inset-0 ${item.color || 'bg-gray-900'}`}>
-                                    <div className="absolute inset-0 bg-black/40" /> {/* Dark overlay */}
+                                    <div className="absolute inset-0 bg-black/40" />
                                     <img 
                                         src={item.img} 
                                         alt={item.name} 
+                                        loading="lazy"
+                                        decoding="async"
                                         className={`w-full h-full object-cover transition-transform duration-1000 ${isActive ? 'scale-110' : 'scale-100'}`}
                                     />
                                 </div>
-
-                                {/* Content Overlay */}
                                 <div className="absolute inset-0 p-6 flex flex-col justify-between z-10">
-                                    {/* Top: Header */}
                                     <div className="flex justify-between items-start">
                                         <div className={`transition-opacity duration-300 ${isActive ? 'opacity-100' : 'opacity-0 md:opacity-100'}`}>
                                             <h3 className={`text-white font-black uppercase tracking-tighter leading-none ${isActive ? 'text-3xl md:text-4xl' : 'text-xl md:text-2xl [writing-mode:vertical-rl] rotate-180 md:[writing-mode:horizontal-tb] md:rotate-0'}`}>
@@ -397,8 +412,6 @@ const BestSellers = ({ theme, onOpenLogin }: { theme: 'dark' | 'light', onOpenLo
                                             <Heart size={20} />
                                         </div>
                                     </div>
-
-                                    {/* Bottom: Details (Only visible when active) */}
                                     {isActive && (
                                         <motion.div 
                                             initial={{ opacity: 0, y: 20 }}
@@ -412,8 +425,6 @@ const BestSellers = ({ theme, onOpenLogin }: { theme: 'dark' | 'light', onOpenLo
                                         </motion.div>
                                     )}
                                 </div>
-
-                                {/* Progress Bar (Only on active card) */}
                                 {isActive && (
                                     <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-white/20">
                                         <motion.div 
@@ -429,203 +440,131 @@ const BestSellers = ({ theme, onOpenLogin }: { theme: 'dark' | 'light', onOpenLo
             </div>
         </section>
     );
-};
+});
 
-// --- UPDATED RALLEYZ SECTION (Enhanced Alignment, Animation & 3D Depth) ---
-const RalleyzSection = ({ theme }: { theme: 'dark' | 'light' }) => {
-    const [activeIndex, setActiveIndex] = useState(0);
-    const [progress, setProgress] = useState(0);
-    const timerRef = useRef<NodeJS.Timeout | null>(null);
-    const CYCLE_DURATION = 5000; // 5 Seconds per card for better readability
+// --- OPTIMIZED RALLEYZ SECTION ---
+const RalleyzSection = memo(({ theme }: { theme: 'dark' | 'light' }) => {
+  const [active, setActive] = useState(0);
+  const containerRef = useRef(null);
+  const isInView = useInView(containerRef, { margin: "0px 0px -100px 0px" });
+  const DURATION = 5000;
 
-    // Auto Cycle Logic with smoothed progress
-    useEffect(() => {
-        const startTimer = () => {
-            timerRef.current = setInterval(() => {
-                setActiveIndex((prev) => (prev + 1) % RALLEYZ_ITEMS.length);
-                setProgress(0);
-            }, CYCLE_DURATION);
-        };
+  useEffect(() => {
+    if (!isInView) return;
+    const timer = setInterval(() => {
+      setActive((prev) => (prev + 1) % RALLEYZ_ITEMS.length);
+    }, DURATION);
+    return () => clearInterval(timer);
+  }, [active, isInView]);
 
-        startTimer();
+  const handleCardClick = (index: number) => {
+    setActive(index);
+  };
 
-        // High frequency update for smoother progress bar
-        const progressInterval = setInterval(() => {
-            setProgress((prev) => {
-                const next = prev + (100 / (CYCLE_DURATION / 16)); 
-                return next > 100 ? 100 : next;
-            });
-        }, 16);
+  return (
+    <section ref={containerRef} className="relative h-[800px] w-full overflow-hidden bg-black flex flex-col justify-end pb-12">
+      <AnimatePresence mode="popLayout">
+        <motion.div
+          key={RALLEYZ_ITEMS[active].id}
+          initial={{ opacity: 0, scale: 1.1 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.2, ease: "easeInOut" }}
+          className="absolute inset-0 z-0 will-change-transform"
+        >
+          <img
+            src={RALLEYZ_ITEMS[active].bg}
+            alt={RALLEYZ_ITEMS[active].title}
+            loading="lazy"
+            decoding="async"
+            className="w-full h-full object-cover opacity-70"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent" />
+        </motion.div>
+      </AnimatePresence>
 
-        return () => {
-            if (timerRef.current) clearInterval(timerRef.current);
-            clearInterval(progressInterval);
-        };
-    }, [activeIndex]);
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 flex flex-col h-full pt-32">
+        <div className="mb-auto max-w-2xl">
+          <motion.div
+            key={`text-${active}`}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.8 }}
+          >
+            <div className="flex items-center gap-3 mb-4">
+               <div className="h-[2px] w-10 bg-[#D4AF37]" />
+               <span className="text-[#D4AF37] font-bold tracking-[0.3em] uppercase text-sm">
+                 {RALLEYZ_ITEMS[active].location}
+               </span>
+            </div>
+            <h2 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter leading-[0.9] drop-shadow-2xl mb-6">
+              {RALLEYZ_ITEMS[active].title}
+            </h2>
+            <p className="text-gray-300 text-lg max-w-md leading-relaxed border-l-2 border-white/20 pl-4 mb-8">
+               {RALLEYZ_ITEMS[active].title}.  {RALLEYZ_ITEMS[active].location}, built for speed.
+            </p>
+            <button className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold tracking-widest uppercase hover:bg-[#D4AF37] hover:text-black hover:border-[#D4AF37] transition-all duration-300">
+               Discover Model
+            </button>
+          </motion.div>
+        </div>
 
-    const handleCardClick = (index: number) => {
-        if (timerRef.current) clearInterval(timerRef.current);
-        setActiveIndex(index);
-        setProgress(0);
-        // Restart loop
-        timerRef.current = setInterval(() => {
-            setActiveIndex((prev) => (prev + 1) % RALLEYZ_ITEMS.length);
-            setProgress(0);
-        }, CYCLE_DURATION);
-    };
-
-    // Helper to split title for styling
-    const getTitleParts = (title: string) => {
-        const parts = title.split(" ");
-        const first = parts.slice(0, Math.ceil(parts.length / 2)).join(" ");
-        const rest = parts.slice(Math.ceil(parts.length / 2)).join(" ");
-        return { first, rest };
-    };
-
-    return (
-        <section className={`relative h-[700px] md:h-[900px] w-full overflow-hidden flex flex-col justify-end pb-12 ${theme === 'light' ? 'bg-gray-100' : 'bg-black'}`}>
-            
-            {/* BACKGROUND LAYER (Parallax & Breathing Effect) */}
-            <div className="absolute inset-0 z-0 bg-black">
-                <AnimatePresence mode='popLayout'>
+        <div className="w-full pb-8">
+           <div className="flex gap-4 md:gap-6 overflow-x-auto pb-4 scrollbar-hide">
+              {RALLEYZ_ITEMS.map((item, index) => {
+                 const isActive = index === active;
+                 return (
                     <motion.div
-                        key={RALLEYZ_ITEMS[activeIndex].id}
-                        initial={{ opacity: 0, scale: 1.1 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 1.5, ease: "easeInOut" }} 
-                        className="absolute inset-0"
+                       key={item.id}
+                       layout
+                       onClick={() => handleCardClick(index)}
+                       className={`relative rounded-xl overflow-hidden cursor-pointer transition-all duration-500 group border border-white/10 ${isActive ? 'flex-[2] min-w-[280px] opacity-100 ring-1 ring-[#D4AF37]/50 shadow-[0_0_30px_rgba(0,0,0,0.5)]' : 'flex-none w-[140px] opacity-50 hover:opacity-100 grayscale hover:grayscale-0'}`}
+                       style={{ height: '160px' }}
                     >
-                         <img 
-                            src={RALLEYZ_ITEMS[activeIndex].bg} 
-                            alt="Background" 
-                            className="w-full h-full object-cover opacity-60"
-                         />
-                         {/* Enhanced Gradient Overlays for Readability */}
-                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/10" />
-                         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent" />
-                         {/* Radial Vignette */}
-                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]" />
+                       <img src={item.bg} alt={item.title} loading="lazy" className="w-full h-full object-cover" />
+                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                       
+                       <div className="absolute bottom-0 left-0 w-full p-4">
+                          <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${isActive ? 'text-[#D4AF37]' : 'text-gray-400'}`}>
+                             0{item.id}
+                          </p>
+                          <h4 className={`font-bold leading-tight ${isActive ? 'text-white text-lg' : 'text-gray-300 text-xs'}`}>
+                             {item.title}
+                          </h4>
+                          {isActive && <p className="text-gray-400 text-xs mt-1">{item.subtitle}</p>}
+                       </div>
+                       {isActive && (
+                          <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10">
+                             <motion.div 
+                                className="h-full bg-[#D4AF37]"
+                                initial={{ width: "0%" }}
+                                animate={{ width: "100%" }}
+                                transition={{ duration: DURATION / 1000, ease: "linear" }}
+                             />
+                          </div>
+                       )}
                     </motion.div>
-                </AnimatePresence>
-            </div>
+                 )
+              })}
+           </div>
+        </div>
+      </div>
+    </section>
+  );
+});
 
-            {/* MAIN CONTENT CONTAINER */}
-            <div className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-8 flex flex-col h-full pt-24 md:pt-32">
-                
-                {/* Text Content - Floating with staggered animation */}
-                <div className="max-w-4xl mt-auto mb-12 md:mb-16">
-                     <motion.div 
-                        key={`subtitle-${activeIndex}`}
-                        initial={{ opacity: 0, x: -30 }} 
-                        animate={{ opacity: 1, x: 0 }} 
-                        transition={{ duration: 0.6, ease: easeOut }}
-                        className="flex items-center gap-3 mb-6"
-                     >
-                         <div className="h-[2px] w-12 bg-[#D4AF37]" />
-                         <span className="text-[#D4AF37] text-sm md:text-base font-bold tracking-[0.25em] uppercase drop-shadow-md">
-                             {RALLEYZ_ITEMS[activeIndex].location}
-                         </span>
-                     </motion.div>
-                     
-                     <motion.h2 
-                        key={`title-${activeIndex}`}
-                        initial={{ opacity: 0, y: 30 }} 
-                        animate={{ opacity: 1, y: 0 }} 
-                        transition={{ delay: 0.1, duration: 0.8, ease: easeOut }}
-                        className="text-5xl md:text-7xl lg:text-8xl font-black text-white uppercase tracking-tighter leading-[0.9] drop-shadow-2xl"
-                     >
-                        {getTitleParts(RALLEYZ_ITEMS[activeIndex].title).first} <br/>
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#FCEEAC]">
-                            {getTitleParts(RALLEYZ_ITEMS[activeIndex].title).rest}
-                        </span>
-                     </motion.h2>
-
-                     <motion.div
-                        key={`desc-${activeIndex}`}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.3, duration: 0.8 }}
-                        className="mt-8 flex flex-col md:flex-row gap-6 md:items-center"
-                     >
-                        <p className="text-gray-300 max-w-md text-sm md:text-lg leading-relaxed font-light border-l-2 border-white/20 pl-4">
-                            Engineered for the {RALLEYZ_ITEMS[activeIndex].location}. Experience precision control and raw power with the {RALLEYZ_ITEMS[activeIndex].title}.
-                        </p>
-                        
-                        <motion.button
-                            whileHover={{ scale: 1.05, backgroundColor: "#ffffff", color: "#000000" }}
-                            whileTap={{ scale: 0.95 }}
-                            className="px-8 py-4 rounded-full border border-white/40 text-white bg-white/5 backdrop-blur-md font-bold tracking-widest uppercase text-xs md:text-sm flex items-center gap-3 w-fit transition-all shadow-lg hover:shadow-white/20"
-                        >
-                            <Play size={16} fill="currentColor" /> Discover Model
-                        </motion.button>
-                     </motion.div>
-                </div>
-
-                {/* BOTTOM CARDS SELECTOR (Horizontal Layout) */}
-                <div className="w-full pb-8">
-                    <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 snap-x">
-                        {RALLEYZ_ITEMS.map((item, index) => {
-                            const isActive = index === activeIndex;
-                            return (
-                                <motion.div
-                                    key={item.id}
-                                    layout
-                                    onClick={() => handleCardClick(index)}
-                                    className={`relative flex-shrink-0 snap-center rounded-xl overflow-hidden cursor-pointer transition-all duration-500 border border-white/10 group
-                                        ${isActive ? 'w-[200px] md:w-[260px] h-[140px] shadow-[0_0_20px_rgba(212,175,55,0.3)] ring-1 ring-[#D4AF37]/50' : 'w-[140px] h-[140px] opacity-50 hover:opacity-80 grayscale hover:grayscale-0'}
-                                    `}
-                                >
-                                    <img 
-                                        src={item.bg} 
-                                        alt={item.title} 
-                                        className="w-full h-full object-cover"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                                    
-                                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                                        {isActive ? (
-                                            <motion.div initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}}>
-                                                <p className="text-[10px] text-[#D4AF37] font-bold uppercase tracking-wider mb-1">Active View</p>
-                                                <h4 className="text-white text-xs font-bold leading-tight line-clamp-2">{item.title}</h4>
-                                            </motion.div>
-                                        ) : (
-                                            <h4 className="text-white/70 text-[10px] font-medium leading-tight line-clamp-2 group-hover:text-white transition-colors">{item.title}</h4>
-                                        )}
-                                    </div>
-
-                                    {/* Progress Bar for Active Card */}
-                                    {isActive && (
-                                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
-                                            <motion.div 
-                                                className="h-full bg-[#D4AF37]"
-                                                initial={{ width: "0%" }}
-                                                animate={{ width: "100%" }}
-                                                transition={{ duration: CYCLE_DURATION / 1000, ease: "linear" }}
-                                            />
-                                        </div>
-                                    )}
-                                </motion.div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </div>
-        </section>
-    );
-};
-
-// --- SHOP BY AGE COMPONENT ---
-const ShopByAge = ({ theme }: { theme: 'dark' | 'light' }) => {
+// --- OPTIMIZED SHOP BY AGE ---
+const ShopByAge = memo(({ theme }: { theme: 'dark' | 'light' }) => {
     return (
         <section className={`py-12 md:py-24 relative overflow-hidden ${theme === 'light' ? 'bg-white' : 'bg-black'} border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/5'}`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="text-center mb-10 md:mb-16">
-                    <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#D4AF37]/30 bg-[#D4AF37]/5 mb-3">
+                    <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#D4AF37]/30 bg-[#D4AF37]/5 mb-3">
                         <Star size={12} className="text-[#D4AF37]" fill="#D4AF37" />
                         <span className="text-[#D4AF37] text-[10px] font-bold tracking-widest uppercase">Find Perfect Gift</span>
                     </motion.div>
-                    <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} className={`text-3xl md:text-5xl font-black uppercase tracking-tight ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                    <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`text-3xl md:text-5xl font-black uppercase tracking-tight ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                         Shop By <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#FCEEAC]">Age</span>
                     </motion.h2>
                 </div>
@@ -636,26 +575,24 @@ const ShopByAge = ({ theme }: { theme: 'dark' | 'light' }) => {
                             key={age.id}
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.1 }}
+                            viewport={{ once: true, margin: "-50px" }}
+                            transition={{ delay: i * 0.05 }} // Faster stagger
                             whileHover={{ y: -10 }}
-                            className="relative flex-shrink-0 w-[160px] md:w-[220px] aspect-[4/5] rounded-[2rem] overflow-hidden cursor-pointer group shadow-xl"
+                            className="relative flex-shrink-0 w-[160px] md:w-[220px] aspect-[4/5] rounded-[2rem] overflow-hidden cursor-pointer group shadow-xl will-change-transform"
                         >
-                            {/* Colorful Gradient Background */}
                             <div className={`absolute inset-0 bg-gradient-to-b ${age.gradient} opacity-90 transition-opacity duration-300`} />
                             
                             <div className="absolute inset-0 flex flex-col p-4">
-                                {/* Top Image Section */}
                                 <div className="relative w-full aspect-square bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center overflow-hidden mb-4 shadow-inner border border-white/10 group-hover:bg-white/30 transition-colors">
                                     <motion.img 
                                         src={age.img} 
                                         alt={age.label} 
+                                        loading="lazy"
                                         className="w-4/5 h-4/5 object-contain drop-shadow-md" 
                                         whileHover={{ scale: 1.15 }}
                                         transition={{ type: "spring", stiffness: 200 }}
                                     />
                                 </div>
-
-                                {/* Bottom Content Section */}
                                 <div className="flex-1 flex flex-col items-center justify-end pb-2">
                                     <div className="text-white mb-2 opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300">
                                         {React.cloneElement(age.icon as React.ReactElement, { size: 20 } as any)}
@@ -670,27 +607,27 @@ const ShopByAge = ({ theme }: { theme: 'dark' | 'light' }) => {
             </div>
         </section>
     );
-};
+});
 
-// --- CHARACTER SLIDER COMPONENT ---
-const CharacterSlider = ({ theme }: { theme: 'dark' | 'light' }) => {
+// --- OPTIMIZED CHARACTER SLIDER ---
+const CharacterSlider = memo(({ theme }: { theme: 'dark' | 'light' }) => {
   const sliderRef = useRef<HTMLDivElement>(null);
   
   return (
     <div className={`w-full py-12 md:py-20 border-t ${theme === 'light' ? 'border-gray-200 bg-gray-50' : 'border-white/5 bg-[#080808]'}`}>
       <div className="max-w-7xl mx-auto px-4 mb-8 md:mb-12 text-center">
-         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} className="inline-block mb-3">
+         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="inline-block mb-3">
            <span className="text-[#D4AF37] font-bold tracking-[0.3em] text-xs uppercase">Find Your Hero</span>
          </motion.div>
-         <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={`text-2xl md:text-4xl lg:text-5xl font-black uppercase tracking-tight ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>Shop By Character</motion.h2>
+         <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className={`text-2xl md:text-4xl lg:text-5xl font-black uppercase tracking-tight ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>Shop By Character</motion.h2>
       </div>
       <div className="relative w-full overflow-hidden group">
         <div className={`absolute left-0 top-0 bottom-0 w-8 md:w-12 lg:w-24 z-20 bg-gradient-to-r ${theme === 'light' ? 'from-gray-50' : 'from-[#080808]'} to-transparent pointer-events-none`} />
         <div className={`absolute right-0 top-0 bottom-0 w-8 md:w-12 lg:w-24 z-20 bg-gradient-to-l ${theme === 'light' ? 'from-gray-50' : 'from-[#080808]'} to-transparent pointer-events-none`} />
         <motion.div ref={sliderRef} className="flex gap-4 md:gap-6 px-4 md:px-12 cursor-grab active:cursor-grabbing pb-8 md:pb-12 overflow-x-auto scrollbar-hide snap-x">
            {CHARACTERS.map((char, i) => (
-             <motion.div key={char.id} initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05, duration: 0.5 }} className="relative flex-shrink-0 snap-center">
-                <div className="group/card relative w-36 h-48 md:w-48 md:h-64 lg:w-56 lg:h-72 rounded-2xl md:rounded-[2rem] overflow-hidden transition-all duration-500 hover:-translate-y-2 md:hover:-translate-y-3">
+             <motion.div key={char.id} initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05, duration: 0.5 }} className="relative flex-shrink-0 snap-center">
+                <div className="group/card relative w-36 h-48 md:w-48 md:h-64 lg:w-56 lg:h-72 rounded-2xl md:rounded-[2rem] overflow-hidden transition-all duration-500 hover:-translate-y-2 md:hover:-translate-y-3 will-change-transform">
                    <div className="absolute inset-0 opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 blur-xl" style={{ backgroundColor: char.color }} />
                    <div className={`relative w-full h-full bg-gray-900 rounded-2xl md:rounded-[2rem] overflow-hidden border ${theme === 'light' ? 'border-gray-200' : 'border-white/10'} group-hover/card:border-white/30 transition-colors`}>
                       <div className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover/card:scale-110" style={{ backgroundImage: `url(${char.src})`, backgroundColor: '#1a1a1a' }} />
@@ -707,98 +644,117 @@ const CharacterSlider = ({ theme }: { theme: 'dark' | 'light' }) => {
       </div>
     </div>
   );
-};
+});
 
-// --- BENTO GRID COMPONENT ---
-const BentoGrid = ({ theme }: { theme: 'dark' | 'light' }) => {
+// --- OPTIMIZED BENTO ITEM ---
+const BentoItem = memo(({ item, theme, index }: { item: any, theme: string, index: number }) => {
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const containerRef = useRef(null);
+    const isInView = useInView(containerRef, { margin: "0px 0px -100px 0px" });
+
+    useEffect(() => {
+        if (item.isVideo && videoRef.current) {
+            if (isInView) videoRef.current.play().catch(() => {});
+            else videoRef.current.pause();
+        }
+    }, [isInView, item.isVideo]);
+
+    return (
+        <motion.div
+            ref={containerRef}
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: index * 0.1, duration: 0.6 }}
+            className={`group relative rounded-2xl md:rounded-[2.5rem] overflow-hidden cursor-pointer ${item.className} ${theme === 'light' ? 'bg-gray-100' : 'bg-[#0f0f0f]'} border ${theme === 'light' ? 'border-gray-200' : 'border-white/10'} will-change-transform`}
+        >
+            <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105">
+                {item.isVideo ? (
+                    <video 
+                        ref={videoRef}
+                        src={item.img} 
+                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" 
+                        muted 
+                        loop 
+                        playsInline
+                        preload="none"
+                        crossOrigin="anonymous" 
+                    />
+                ) : (
+                    <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${item.img})` }} />
+                )}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-40 transition-opacity duration-500 mix-blend-overlay" style={{ backgroundColor: item.color }} />
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+            <div className="absolute inset-0 p-4 md:p-8 flex flex-col justify-between">
+                <div className="flex justify-between items-start">
+                    <div className={`p-2 md:p-3 rounded-full backdrop-blur-md ${theme === 'light' ? 'bg-white/90 text-black' : 'bg-black/40 text-white border border-white/20'}`}>
+                    {React.cloneElement(item.icon, { size: 14, className: `md:size-[20px] ${item.icon.props.className}` })}
+                    </div>
+                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                        <ArrowRight size={16} className="md:size-[20px] text-white -rotate-45 group-hover:rotate-0 transition-transform duration-300" />
+                    </div>
+                </div>
+                <div>
+                    <span className="text-[#D4AF37] font-bold tracking-widest text-[8px] md:text-[10px] uppercase mb-1 md:mb-2 block opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 delay-75">{item.subtitle}</span>
+                    <h3 className="text-white text-lg md:text-2xl lg:text-3xl font-black uppercase leading-tight tracking-tight drop-shadow-lg">{item.title}</h3>
+                </div>
+            </div>
+        </motion.div>
+    );
+});
+
+const BentoGrid = memo(({ theme }: { theme: 'dark' | 'light' }) => {
   return (
     <section className={`py-12 md:py-24 relative ${theme === 'light' ? 'bg-white' : 'bg-black'} border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/10'}`}>
        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8 md:mb-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
              <div className="max-w-2xl">
-                <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} className="flex items-center gap-2 mb-3">
+                <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="flex items-center gap-2 mb-3">
                    <Sparkles size={14} className="md:size-[16px] text-[#D4AF37]" />
                    <span className="text-[#D4AF37] font-bold tracking-[0.2em] text-xs uppercase">Curated Collections</span>
                 </motion.div>
-                <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} className={`text-3xl md:text-5xl lg:text-7xl font-black uppercase tracking-tighter leading-none ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+                <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`text-3xl md:text-5xl lg:text-7xl font-black uppercase tracking-tighter leading-none ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
                    Best of <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#FCEEAC]">WOW Lifestyle</span>
                 </motion.h2>
              </div>
-             <motion.button initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} className={`px-6 py-3 md:px-8 md:py-4 rounded-full border ${theme === 'light' ? 'border-gray-200 hover:bg-gray-100 text-black' : 'border-white/20 hover:bg-white/10 text-white'} font-bold tracking-wide transition-all flex items-center gap-2 group`}>
+             <motion.button initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className={`px-6 py-3 md:px-8 md:py-4 rounded-full border ${theme === 'light' ? 'border-gray-200 hover:bg-gray-100 text-black' : 'border-white/20 hover:bg-white/10 text-white'} font-bold tracking-wide transition-all flex items-center gap-2 group`}>
                 Explore All Categories <ArrowRight size={16} className="md:size-[18px] group-hover:translate-x-1 transition-transform" />
              </motion.button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 auto-rows-[180px] md:auto-rows-[280px]">
              {BENTO_ITEMS.map((item, i) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 50 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1, duration: 0.6 }}
-                  className={`group relative rounded-2xl md:rounded-[2.5rem] overflow-hidden cursor-pointer ${item.className} ${theme === 'light' ? 'bg-gray-100' : 'bg-[#0f0f0f]'} border ${theme === 'light' ? 'border-gray-200' : 'border-white/10'}`}
-                >
-                   <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105">
-                      {item.isVideo ? (
-                         <video 
-                            src={item.img} 
-                            className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" 
-                            autoPlay 
-                            muted 
-                            loop 
-                            playsInline
-                            crossOrigin="anonymous" 
-                         />
-                      ) : (
-                         <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${item.img})` }} />
-                      )}
-                      <div className="absolute inset-0 opacity-0 group-hover:opacity-40 transition-opacity duration-500 mix-blend-overlay" style={{ backgroundColor: item.color }} />
-                   </div>
-                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-                   <div className="absolute inset-0 p-4 md:p-8 flex flex-col justify-between">
-                      <div className="flex justify-between items-start">
-                         <div className={`p-2 md:p-3 rounded-full backdrop-blur-md ${theme === 'light' ? 'bg-white/90 text-black' : 'bg-black/40 text-white border border-white/20'}`}>
-                           {React.cloneElement(item.icon, { size: 14, className: `md:size-[20px] ${item.icon.props.className}` })}
-                         </div>
-                         <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                             <ArrowRight size={16} className="md:size-[20px] text-white -rotate-45 group-hover:rotate-0 transition-transform duration-300" />
-                         </div>
-                      </div>
-                      <div>
-                         <span className="text-[#D4AF37] font-bold tracking-widest text-[8px] md:text-[10px] uppercase mb-1 md:mb-2 block opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 delay-75">{item.subtitle}</span>
-                         <h3 className="text-white text-lg md:text-2xl lg:text-3xl font-black uppercase leading-tight tracking-tight drop-shadow-lg">{item.title}</h3>
-                      </div>
-                   </div>
-                </motion.div>
+                <BentoItem key={item.id} item={item} theme={theme} index={i} />
              ))}
           </div>
        </div>
     </section>
   );
-};
+});
 
-// --- REVIEWS SECTION ---
-const ReviewSection = ({ theme }: { theme: 'dark' | 'light' }) => {
+// --- OPTIMIZED REVIEWS SECTION ---
+const ReviewSection = memo(({ theme }: { theme: 'dark' | 'light' }) => {
   return (
     <section className={`py-12 md:py-32 relative overflow-hidden ${theme === 'light' ? 'bg-gray-50' : 'bg-[#080808]'} border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/10'}`}>
       <div className="absolute top-0 right-0 w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-gradient-to-bl from-[#D4AF37]/10 to-transparent blur-[80px] md:blur-[120px] rounded-full pointer-events-none" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 items-center mb-12 md:mb-20">
           <div>
-            <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} className="flex items-center gap-2 mb-4">
+            <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="flex items-center gap-2 mb-4">
                <MessageSquare size={14} className="md:size-[16px] text-[#D4AF37]" />
                <span className="text-[#D4AF37] font-bold tracking-[0.2em] text-xs uppercase">Community Voices</span>
             </motion.div>
-            <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} className={`text-3xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight leading-none mb-4 md:mb-6 ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
-              Loved By <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#FCEEAC]">Collectors</span>
+            <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`text-3xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight leading-none mb-4 md:mb-6 ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+               Loved By <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#FCEEAC]">Collectors</span>
             </motion.h2>
             <p className={`text-sm md:text-lg max-w-md ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-              Join thousands of happy customers discovering the rarest collectibles.
+               Join thousands of happy customers discovering the rarest collectibles.
             </p>
           </div>
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
             className={`p-6 md:p-8 rounded-2xl md:rounded-[2rem] border backdrop-blur-xl ${theme === 'light' ? 'bg-white/80 border-gray-200 shadow-lg md:shadow-xl' : 'bg-white/5 border-white/10 shadow-lg md:shadow-2xl'}`}
           >
             <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8 mb-6 md:mb-8">
@@ -818,6 +774,7 @@ const ReviewSection = ({ theme }: { theme: 'dark' | 'light' }) => {
                         <motion.div 
                           initial={{ width: 0 }} 
                           whileInView={{ width: i === 0 ? '85%' : i === 1 ? '10%' : '2%' }} 
+                          viewport={{ once: true }}
                           transition={{ duration: 1, delay: 0.5 }}
                           className="h-full bg-[#D4AF37]" 
                         />
@@ -837,25 +794,25 @@ const ReviewSection = ({ theme }: { theme: 'dark' | 'light' }) => {
            <div className="flex gap-4 md:gap-6 overflow-hidden mask-linear-fade pb-6 md:pb-8">
               <motion.div 
                 animate={{ x: "-50%" }} 
-                transition={{ duration: 30, ease: "linear", repeat: Infinity }}
-                className="flex gap-4 md:gap-6 flex-shrink-0"
+                transition={{ duration: 60, ease: "linear", repeat: Infinity }} // Slower duration for performance
+                className="flex gap-4 md:gap-6 flex-shrink-0 will-change-transform"
               >
                  {[...REVIEWS, ...REVIEWS, ...REVIEWS].map((review, i) => (
-                    <div key={`${review.id}-${i}`} className={`w-64 md:w-80 p-4 md:p-6 rounded-xl md:rounded-2xl flex-shrink-0 border ${theme === 'light' ? 'bg-white border-gray-100 shadow-sm' : 'bg-[#111] border-white/5'}`}>
-                       <div className="flex items-center gap-3 mb-3 md:mb-4">
-                          <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-200 overflow-hidden">
-                             <User className="w-full h-full p-2 text-gray-500" /> 
-                          </div>
-                          <div className="flex-1">
-                             <h4 className={`font-bold text-xs md:text-sm ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>{review.name}</h4>
-                             <div className="flex items-center gap-1">
-                               {[...Array(review.rating)].map((_, r) => <Star key={r} size={10} className="md:size-[10px] text-[#D4AF37]" fill="#D4AF37" />)}
-                             </div>
-                          </div>
-                          <span className={`text-[8px] md:text-[10px] ${theme === 'light' ? 'text-gray-400' : 'text-gray-600'}`}>{review.date}</span>
-                       </div>
-                       <p className={`text-xs md:text-sm leading-relaxed ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>"{review.text}"</p>
-                    </div>
+                   <div key={`${review.id}-${i}`} className={`w-64 md:w-80 p-4 md:p-6 rounded-xl md:rounded-2xl flex-shrink-0 border ${theme === 'light' ? 'bg-white border-gray-100 shadow-sm' : 'bg-[#111] border-white/5'}`}>
+                      <div className="flex items-center gap-3 mb-3 md:mb-4">
+                         <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-200 overflow-hidden">
+                            <User className="w-full h-full p-2 text-gray-500" /> 
+                         </div>
+                         <div className="flex-1">
+                            <h4 className={`font-bold text-xs md:text-sm ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>{review.name}</h4>
+                            <div className="flex items-center gap-1">
+                              {[...Array(review.rating)].map((_, r) => <Star key={r} size={10} className="md:size-[10px] text-[#D4AF37]" fill="#D4AF37" />)}
+                            </div>
+                         </div>
+                         <span className={`text-[8px] md:text-[10px] ${theme === 'light' ? 'text-gray-400' : 'text-gray-600'}`}>{review.date}</span>
+                      </div>
+                      <p className={`text-xs md:text-sm leading-relaxed ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>"{review.text}"</p>
+                   </div>
                  ))}
               </motion.div>
            </div>
@@ -883,28 +840,30 @@ const ReviewSection = ({ theme }: { theme: 'dark' | 'light' }) => {
       </div>
     </section>
   );
-};
+});
 
-// --- NEW 3D FOOTER COMPONENT ---
-const Footer = ({ theme }: { theme: 'dark' | 'light' }) => {
+// --- OPTIMIZED FOOTER ---
+const Footer = memo(({ theme }: { theme: 'dark' | 'light' }) => {
   return (
     <footer className={`relative pt-24 md:pt-32 pb-8 md:pb-12 ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-[#050505] text-white'}`}>
        <div className="absolute inset-0 overflow-hidden pointer-events-none">
          <div className={`absolute inset-0 opacity-[0.03] ${theme === 'light' ? 'bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)]' : 'bg-[linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)]'} bg-[size:20px_20px] md:bg-[size:40px_40px]`} />
        </div>
        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] sm:w-[300px] md:w-[400px] lg:w-[600px] pointer-events-none z-30 block">
-          <motion.div 
+         <motion.div 
              initial={{ y: -50, opacity: 0 }}
              whileInView={{ y: 0, opacity: 1 }}
+             viewport={{ once: true }}
              transition={{ duration: 1, type: "spring" }}
              animate={{ y: [0, 15, 0] }}
              // @ts-ignore
              transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
-             className="relative"
+             className="relative will-change-transform"
           >
              <img 
                src="/pngcar2.png" 
                alt="F1 Car" 
+               loading="lazy"
                className="w-full h-auto drop-shadow-[0_15px_30px_rgba(0,0,0,0.6)] md:drop-shadow-[0_25px_50px_rgba(0,0,0,0.6)]" 
              />
              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[50%] bg-[#D4AF37]/20 blur-[40px] md:blur-[60px] rounded-full -z-10" />
@@ -913,86 +872,90 @@ const Footer = ({ theme }: { theme: 'dark' | 'light' }) => {
 
        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-12 md:pt-0">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12 mb-12 md:mb-20">
-             <div className="col-span-1 md:col-span-1">
-                <div className="flex items-center gap-3 mb-4 md:mb-6">
-                   <div className="w-10 h-10 md:w-12 md:h-12 relative rounded-full overflow-hidden border border-[#D4AF37]/50 shadow-[0_0_10px_rgba(212,175,55,0.3)] md:shadow-[0_0_15px_rgba(212,175,55,0.3)]">
-                      <img 
-                        src="/wow-logo.png" 
-                        alt="WOW Lifestyle Logo" 
-                        className="w-full h-full object-cover"
-                      />
-                   </div>
-                   <span className="text-xl md:text-2xl font-black tracking-tighter">WOW <span className="text-[#D4AF37]">LIFESTYLE</span></span>
-                </div>
-                <p className={`text-xs md:text-sm leading-relaxed mb-4 md:mb-6 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-                   Engineers of the future. We build robust, scalable, and revolutionary toy solutions that propel play forward into the digital age.
-                </p>
-                <div className="flex gap-3 md:gap-4">
-                   {[Twitter, Instagram, Facebook, Youtube].map((Icon, i) => (
-                      <a key={i} href="#" className={`p-2.5 md:p-3 rounded-full transition-all ${theme === 'light' ? 'bg-gray-100 hover:bg-[#D4AF37] hover:text-white' : 'bg-white/5 hover:bg-[#D4AF37] hover:text-black'}`}>
-                         <Icon size={16} className="md:size-[18px]" />
-                      </a>
-                   ))}
-                </div>
-             </div>
-             <div>
-                <h4 className="font-bold mb-4 md:mb-6 text-[#D4AF37] uppercase tracking-wider text-xs">Company</h4>
-                <ul className={`space-y-3 md:space-y-4 text-xs md:text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-                   {['About Us', 'Careers', 'Blog & News', 'Sustainability', 'Partners'].map(item => (
-                      <li key={item}><a href="#" className="hover:text-[#D4AF37] transition-colors">{item}</a></li>
-                   ))}
-                </ul>
-             </div>
-             <div>
-                <h4 className="font-bold mb-4 md:mb-6 text-[#D4AF37] uppercase tracking-wider text-xs">Support</h4>
-                <ul className={`space-y-3 md:space-y-4 text-xs md:text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-                   {['Help Center', 'Terms of Service', 'Legal', 'Privacy Policy', 'Status'].map(item => (
-                      <li key={item}><a href="#" className="hover:text-[#D4AF37] transition-colors">{item}</a></li>
-                   ))}
-                </ul>
-             </div>
-             <div>
-                <h4 className="font-bold mb-4 md:mb-6 text-[#D4AF37] uppercase tracking-wider text-xs">Stay in the Lead</h4>
-                <p className={`text-xs md:text-sm mb-3 md:mb-4 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-                   Subscribe to our pit stop newsletter for the latest drops.
-                </p>
-                <div className={`flex items-center p-1 rounded-lg md:rounded-xl border ${theme === 'light' ? 'bg-gray-50 border-gray-200' : 'bg-white/5 border-white/10'}`}>
-                   <div className="pl-2 md:pl-3 text-gray-400"><Mail size={16} className="md:size-[18px]" /></div>
-                   <input 
-                     type="email" 
-                     placeholder="Enter your email" 
-                     className="w-full bg-transparent border-none focus:ring-0 text-xs md:text-sm p-2 md:p-3 outline-none placeholder-gray-500"
-                   />
-                   <button className="p-2 md:p-3 rounded-lg bg-[#D4AF37] text-black font-bold hover:bg-[#FCEEAC] transition-colors text-xs md:text-sm">
-                      <Send size={16} className="md:size-[18px]" />
-                   </button>
-                </div>
-             </div>
+              <div className="col-span-1 md:col-span-1">
+                 <div className="flex items-center gap-3 mb-4 md:mb-6">
+                    <div className="w-10 h-10 md:w-12 md:h-12 relative rounded-full overflow-hidden border border-[#D4AF37]/50 shadow-[0_0_10px_rgba(212,175,55,0.3)] md:shadow-[0_0_15px_rgba(212,175,55,0.3)]">
+                       <img 
+                         src="/wow-logo.png" 
+                         alt="WOW Lifestyle Logo" 
+                         className="w-full h-full object-cover"
+                       />
+                    </div>
+                    <span className="text-xl md:text-2xl font-black tracking-tighter">WOW <span className="text-[#D4AF37]">LIFESTYLE</span></span>
+                 </div>
+                 <p className={`text-xs md:text-sm leading-relaxed mb-4 md:mb-6 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                    Engineers of the future. We build robust, scalable, and revolutionary toy solutions that propel play forward into the digital age.
+                 </p>
+                 <div className="flex gap-3 md:gap-4">
+                    {[Twitter, Instagram, Facebook, Youtube].map((Icon, i) => (
+                       <a key={i} href="#" className={`p-2.5 md:p-3 rounded-full transition-all ${theme === 'light' ? 'bg-gray-100 hover:bg-[#D4AF37] hover:text-white' : 'bg-white/5 hover:bg-[#D4AF37] hover:text-black'}`}>
+                          <Icon size={16} className="md:size-[18px]" />
+                       </a>
+                    ))}
+                 </div>
+              </div>
+              <div>
+                 <h4 className="font-bold mb-4 md:mb-6 text-[#D4AF37] uppercase tracking-wider text-xs">Company</h4>
+                 <ul className={`space-y-3 md:space-y-4 text-xs md:text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                    {['About Us', 'Careers', 'Blog & News', 'Sustainability', 'Partners'].map(item => (
+                       <li key={item}><a href="#" className="hover:text-[#D4AF37] transition-colors">{item}</a></li>
+                    ))}
+                 </ul>
+              </div>
+              <div>
+                 <h4 className="font-bold mb-4 md:mb-6 text-[#D4AF37] uppercase tracking-wider text-xs">Support</h4>
+                 <ul className={`space-y-3 md:space-y-4 text-xs md:text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                    {['Help Center', 'Terms of Service', 'Legal', 'Privacy Policy', 'Status'].map(item => (
+                       <li key={item}><a href="#" className="hover:text-[#D4AF37] transition-colors">{item}</a></li>
+                    ))}
+                 </ul>
+              </div>
+              <div>
+                 <h4 className="font-bold mb-4 md:mb-6 text-[#D4AF37] uppercase tracking-wider text-xs">Stay in the Lead</h4>
+                 <p className={`text-xs md:text-sm mb-3 md:mb-4 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
+                    Subscribe to our pit stop newsletter for the latest drops.
+                 </p>
+                 <div className={`flex items-center p-1 rounded-lg md:rounded-xl border ${theme === 'light' ? 'bg-gray-50 border-gray-200' : 'bg-white/5 border-white/10'}`}>
+                    <div className="pl-2 md:pl-3 text-gray-400"><Mail size={16} className="md:size-[18px]" /></div>
+                    <input 
+                      type="email" 
+                      placeholder="Enter your email" 
+                      className="w-full bg-transparent border-none focus:ring-0 text-xs md:text-sm p-2 md:p-3 outline-none placeholder-gray-500"
+                    />
+                    <button className="p-2 md:p-3 rounded-lg bg-[#D4AF37] text-black font-bold hover:bg-[#FCEEAC] transition-colors text-xs md:text-sm">
+                       <Send size={16} className="md:size-[18px]" />
+                    </button>
+                 </div>
+              </div>
           </div>
           <div className={`pt-6 md:pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4 ${theme === 'light' ? 'border-gray-200 text-gray-500' : 'border-white/10 text-gray-500'}`}>
-             <p className="text-[10px] md:text-xs text-center md:text-left">© 2024 WOW Lifestyle. All rights reserved.</p>
-             <div className="flex gap-4 md:gap-6 text-[10px] md:text-xs">
-                <a href="#" className="hover:text-[#D4AF37]">Privacy Policy</a>
-                <a href="#" className="hover:text-[#D4AF37]">Terms of Use</a>
-                <a href="#" className="hover:text-[#D4AF37]">Cookie Policy</a>
-             </div>
+              <p className="text-[10px] md:text-xs text-center md:text-left">© 2024 WOW Lifestyle. All rights reserved.</p>
+              <div className="flex gap-4 md:gap-6 text-[10px] md:text-xs">
+                 <a href="#" className="hover:text-[#D4AF37]">Privacy Policy</a>
+                 <a href="#" className="hover:text-[#D4AF37]">Terms of Use</a>
+                 <a href="#" className="hover:text-[#D4AF37]">Cookie Policy</a>
+              </div>
           </div>
        </div>
     </footer>
   );
-};
+});
 
-// --- STUDIO SHOWCASE COMPONENT (Clean Professional) ---
-const StudioShowcase = ({ videos, theme }: { videos: typeof VINTAGE_VIDEOS, theme: 'dark' | 'light' }) => {
+// --- OPTIMIZED STUDIO SHOWCASE ---
+const StudioShowcase = memo(({ videos, theme }: { videos: typeof VINTAGE_VIDEOS, theme: 'dark' | 'light' }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [timer, setTimer] = useState(0);
   const activeVideo = videos[activeIndex];
   const CYCLE_DURATION = 5000;
+  const containerRef = useRef(null);
+  const isInView = useInView(containerRef, { margin: "0px 0px -100px 0px" });
 
   const handleNext = () => { setActiveIndex((prev) => (prev + 1) % videos.length); setTimer(0); };
   const handlePrev = () => { setActiveIndex((prev) => (prev - 1 + videos.length) % videos.length); setTimer(0); };
 
   useEffect(() => {
+    if (!isInView) return; // Stop cycling if not visible
+    
     const startTime = Date.now();
     const interval = setInterval(() => {
       const elapsed = Date.now() - startTime;
@@ -1000,16 +963,18 @@ const StudioShowcase = ({ videos, theme }: { videos: typeof VINTAGE_VIDEOS, them
       else setTimer((elapsed / CYCLE_DURATION) * 100);
     }, 50);
     return () => clearInterval(interval);
-  }, [activeIndex]);
+  }, [activeIndex, isInView]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto perspective-[800px] md:perspective-[1200px] py-8 md:py-10 group">
+    <div ref={containerRef} className="w-full max-w-7xl mx-auto perspective-[800px] md:perspective-[1200px] py-8 md:py-10 group">
       <div className={`relative w-full aspect-[4/3] md:aspect-[16/9] lg:aspect-[2.35/1] rounded-xl md:rounded-2xl lg:rounded-[2rem] shadow-lg md:shadow-2xl overflow-hidden ${theme === 'light' ? 'bg-gray-100 shadow-gray-300' : 'bg-[#0a0a0a] shadow-black'} border border-white/5`}>
         <div className="absolute -inset-2 md:-inset-4 blur-[40px] md:blur-[80px] opacity-20 transition-colors duration-1000 -z-10" style={{ backgroundColor: activeVideo.color }} />
         <div className="absolute inset-0 bg-black">
            <AnimatePresence mode='wait'>
             <motion.div key={activeVideo.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.8 }} className="w-full h-full">
-              <video src={activeVideo.src} className="w-full h-full object-cover" autoPlay muted playsInline loop crossOrigin="anonymous" />
+              {isInView && (
+                  <video src={activeVideo.src} className="w-full h-full object-cover" autoPlay muted playsInline loop crossOrigin="anonymous" />
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none opacity-80" />
             </motion.div>
           </AnimatePresence>
@@ -1038,11 +1003,106 @@ const StudioShowcase = ({ videos, theme }: { videos: typeof VINTAGE_VIDEOS, them
       </div>
     </div>
   );
-};
+});
+
+// --- OPTIMIZED HERO SECTION ---
+const HeroSection = memo(({ theme, isMobile }: { theme: 'dark' | 'light', isMobile: boolean }) => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    
+    // Auto-cycle hero cars
+    useEffect(() => { 
+        const interval = setInterval(() => { 
+            setCurrentIndex((prev) => (prev + 1) % CAR_IMAGES.length); 
+        }, 3500); 
+        return () => clearInterval(interval); 
+    }, []);
+
+    const getTextColor = () => theme === 'light' ? 'text-gray-900' : 'text-white';
+    const getSecondaryTextColor = () => theme === 'light' ? 'text-gray-600' : 'text-gray-300';
+    const getBorderColor = () => theme === 'light' ? 'border-gray-200' : 'border-white/10';
+    const getGridColor = () => theme === 'light' ? 'bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)]' : 'bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)]';
+    
+    const textVariants = { hidden: { opacity: 0, y: 30 }, visible: (delay: number) => ({ opacity: 1, y: 0, transition: { delay, duration: 0.6, ease: easeOut } }) };
+    const getCarVariant = (index: number) => { const total = CAR_IMAGES.length; if (index === currentIndex) return 'active'; if (index === (currentIndex + 1) % total) return 'next'; if (index === (currentIndex - 1 + total) % total) return 'prev'; return 'hidden'; };
+    
+    const carVariants = {
+        next: { 
+            x: isMobile ? 0 : 240, 
+            y: isMobile ? -20 : -180, 
+            scale: isMobile ? 0.7 : 0.55, 
+            opacity: 0.5, 
+            zIndex: 5, 
+            filter: 'blur(2px) grayscale(100%)', 
+            transition: { duration: 0.8, ease: easeInOut } 
+        },
+        active: { 
+            x: 0, 
+            y: isMobile ? 10 : 0, 
+            scale: isMobile ? 0.85 : 1.15, 
+            opacity: 1, 
+            zIndex: 20, 
+            filter: 'blur(0px) grayscale(0%)', 
+            transition: { type: "spring" as const, stiffness: 180, damping: 14 } 
+        },
+        prev: { 
+            x: isMobile ? 0 : 240, 
+            y: isMobile ? 20 : 180, 
+            scale: isMobile ? 0.7 : 0.55, 
+            opacity: 0.5, 
+            zIndex: 4, 
+            filter: 'blur(2px) grayscale(100%)', 
+            transition: { duration: 0.8, ease: easeInOut } 
+        },
+        hidden: { 
+            x: isMobile ? 0 : 350, 
+            y: 0, 
+            scale: 0, 
+            opacity: 0 
+        }
+    } as const;
+
+    return (
+        <section className={`relative min-h-screen overflow-hidden flex flex-col justify-center pt-32 md:pt-24 lg:pt-32 pb-12 md:pb-20`}>
+        <div className="absolute right-[-20%] md:right-[-10%] top-[20%] w-[300px] h-[300px] md:w-[600px] md:h-[600px] bg-gradient-to-br from-[#D4AF37]/20 to-transparent blur-[80px] md:blur-[150px] rounded-full pointer-events-none -z-10" />
+        <div className={`absolute inset-0 ${getGridColor()} bg-[size:16px_16px] md:bg-[size:24px_24px] -z-20`}></div>
+        <div className="flex-grow flex items-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
+              
+              <div className="flex flex-col justify-center text-center lg:text-left z-10 lg:order-1">
+                <motion.div custom={0} initial="hidden" animate="visible" variants={textVariants} className="flex justify-center lg:justify-start mb-4 md:mb-6">
+                  <span className="px-3 py-1.5 md:px-4 md:py-2 rounded-full border border-[#D4AF37]/50 bg-gradient-to-r from-[#D4AF37]/10 to-transparent text-[#D4AF37] text-xs md:text-sm font-bold tracking-wide flex items-center gap-2"><Trophy size={14} className="md:size-[16px]" /> OFFICIAL F1 COLLECTOR SERIES</span>
+                </motion.div>
+                <motion.h1 custom={0.2} initial="hidden" animate="visible" variants={textVariants} className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black ${getTextColor()} leading-tight mb-4 md:mb-6`}>Race Ready. <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#FCEEAC] to-[#D4AF37] animate-gradient">Miniature Speed.</span></motion.h1>
+                <motion.p custom={0.4} initial="hidden" animate="visible" variants={textVariants} className={`${getSecondaryTextColor()} text-sm md:text-lg max-w-lg mx-auto lg:mx-0 mb-6 md:mb-10 leading-relaxed`}>Experience the thrill of the track with our ultra-realistic, precision-engineered diecast Formula 1 collection.</motion.p>
+                <motion.div custom={0.6} initial="hidden" animate="visible" variants={textVariants} className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center lg:justify-start">
+                  <button className="px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-[#D4AF37] to-[#FCEEAC] text-black font-bold text-base md:text-lg rounded-lg md:rounded-xl hover:shadow-lg md:hover:shadow-xl hover:shadow-[#D4AF37]/25 transition-all duration-300 flex items-center justify-center gap-2 md:gap-3 group">Shop Collection <ArrowRight size={18} className="md:size-[20px] group-hover:translate-x-1 transition-transform" /></button>
+                  <button className={`px-6 py-3 md:px-8 md:py-4 ${theme === 'light' ? 'bg-gray-100 border-gray-300 text-gray-800 hover:bg-gray-200' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'} border font-bold text-base md:text-lg rounded-lg md:rounded-xl transition-all duration-300 flex items-center justify-center gap-2 md:gap-3`}>View Gallery <CarFront size={18} className="md:size-[20px]" /></button>
+                </motion.div>
+              </div>
+
+              <div className="relative h-[250px] md:h-[400px] lg:h-[600px] w-full flex items-center justify-center perspective-[800px] md:perspective-[1200px] lg:order-2">
+                  <div className="absolute z-0 w-[200px] h-[200px] md:w-[300px] md:h-[300px] bg-gradient-to-br from-[#D4AF37]/10 to-transparent rounded-full blur-2xl md:blur-3xl" />
+                  {CAR_IMAGES.map((imgSrc, index) => { const variant = getCarVariant(index); if (variant === 'hidden') return null; return ( <motion.div key={index} variants={carVariants} initial="next" animate={variant} className="absolute w-full flex items-center justify-center origin-center will-change-transform" style={{ transformStyle: "preserve-3d" }}><motion.div className="relative" animate={variant === 'active' ? { y: [-8, 8, -8], transition: { duration: 5, repeat: Infinity, ease: easeInOut } } : {}}><img src={imgSrc} alt={`Vehicle ${index}`} loading="eager" className="w-full max-w-[240px] md:max-w-[320px] lg:max-w-[500px] h-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)] md:drop-shadow-[0_35px_60px_rgba(0,0,0,0.9)]" /></motion.div></motion.div> ); })}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className={`relative w-full border-t ${getBorderColor()} ${theme === 'light' ? 'bg-white/60' : 'bg-black/60'} backdrop-blur-lg mt-8 md:mt-12 py-4 md:py-6`}>
+           <div className={`absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r ${theme === 'light' ? 'from-white' : 'from-black'} to-transparent z-10 pointer-events-none`} />
+           <div className={`absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l ${theme === 'light' ? 'from-white' : 'from-black'} to-transparent z-10 pointer-events-none`} />
+           <div className="flex overflow-hidden">
+              <motion.div className="flex items-center gap-8 md:gap-16 lg:gap-24 px-6 md:px-12" animate={{ x: "-50%" }} transition={{ duration: 30, ease: "linear", repeat: Infinity }}>
+                 {[...BRAND_LOGOS, ...BRAND_LOGOS].map((brand, i) => ( <div key={`${brand.name}-${i}`} className="group relative flex-shrink-0 cursor-pointer"><img src={brand.src} alt={brand.name} loading="lazy" className={`h-8 md:h-10 lg:h-12 w-auto object-contain transition-all duration-500 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-110 md:group-hover:scale-125 ${theme === 'light' ? 'grayscale opacity-50' : 'grayscale opacity-40'}`} /></div> ))}
+              </motion.div>
+           </div>
+        </div>
+      </section>
+    );
+});
 
 // --- MAIN PAGE COMPONENT ---
 export default function LandingPage() {
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [isMobile, setIsMobile] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -1066,54 +1126,11 @@ export default function LandingPage() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  useEffect(() => { const interval = setInterval(() => { setCurrentIndex((prev) => (prev + 1) % CAR_IMAGES.length); }, 3500); return () => clearInterval(interval); }, []);
-
   const getBackgroundColor = () => theme === 'light' ? 'bg-white' : 'bg-black';
   const getTextColor = () => theme === 'light' ? 'text-gray-900' : 'text-white';
   const getSecondaryTextColor = () => theme === 'light' ? 'text-gray-600' : 'text-gray-300';
   const getBorderColor = () => theme === 'light' ? 'border-gray-200' : 'border-white/10';
-  const getGridColor = () => theme === 'light' ? 'bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)]' : 'bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)]';
   const getSectionBackground = () => theme === 'light' ? 'bg-gradient-to-b from-gray-50 to-white' : 'bg-gradient-to-b from-[#0a0a0a] to-black';
-
-  const textVariants = { hidden: { opacity: 0, y: 30 }, visible: (delay: number) => ({ opacity: 1, y: 0, transition: { delay, duration: 0.6, ease: easeOut } }) };
-  
-  const getCarVariant = (index: number) => { const total = CAR_IMAGES.length; if (index === currentIndex) return 'active'; if (index === (currentIndex + 1) % total) return 'next'; if (index === (currentIndex - 1 + total) % total) return 'prev'; return 'hidden'; };
-  
-  const carVariants = {
-    next: { 
-        x: isMobile ? 0 : 240, 
-        y: isMobile ? -20 : -180, 
-        scale: isMobile ? 0.7 : 0.55, 
-        opacity: 0.5, 
-        zIndex: 5, 
-        filter: 'blur(2px) grayscale(100%)', 
-        transition: { duration: 0.8, ease: easeInOut } 
-    },
-    active: { 
-        x: 0, 
-        y: isMobile ? 10 : 0, 
-        scale: isMobile ? 0.85 : 1.15, 
-        opacity: 1, 
-        zIndex: 20, 
-        filter: 'blur(0px) grayscale(0%)', 
-        transition: { type: "spring" as const, stiffness: 180, damping: 14 } 
-    },
-    prev: { 
-        x: isMobile ? 0 : 240, 
-        y: isMobile ? 20 : 180, 
-        scale: isMobile ? 0.7 : 0.55, 
-        opacity: 0.5, 
-        zIndex: 4, 
-        filter: 'blur(2px) grayscale(100%)', 
-        transition: { duration: 0.8, ease: easeInOut } 
-    },
-    hidden: { 
-        x: isMobile ? 0 : 350, 
-        y: 0, 
-        scale: 0, 
-        opacity: 0 
-    }
-  } as const;
 
   return (
     <div className={`w-full ${getBackgroundColor()} ${getTextColor()} transition-colors duration-300`}>
@@ -1131,50 +1148,15 @@ export default function LandingPage() {
             isOpen={isLoginOpen} 
             onClose={() => setIsLoginOpen(false)} 
             onGetOtp={() => {
-              setIsLoginOpen(false); // Close Modal
-              setShowToast(true);    // Show Success Message
+              setIsLoginOpen(false);
+              setShowToast(true);
             }}
           />
         )}
       </AnimatePresence>
 
-      {/* HERO SECTION */}
-      <section className={`relative min-h-screen overflow-hidden flex flex-col justify-center pt-32 md:pt-24 lg:pt-32 pb-12 md:pb-20`}>
-        <div className="absolute right-[-20%] md:right-[-10%] top-[20%] w-[300px] h-[300px] md:w-[600px] md:h-[600px] bg-gradient-to-br from-[#D4AF37]/20 to-transparent blur-[80px] md:blur-[150px] rounded-full pointer-events-none -z-10" />
-        <div className={`absolute inset-0 ${getGridColor()} bg-[size:16px_16px] md:bg-[size:24px_24px] -z-20`}></div>
-        <div className="flex-grow flex items-center">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
-              
-              <div className="flex flex-col justify-center text-center lg:text-left z-10 lg:order-1">
-                <motion.div custom={0} initial="hidden" animate="visible" variants={textVariants} className="flex justify-center lg:justify-start mb-4 md:mb-6">
-                  <span className="px-3 py-1.5 md:px-4 md:py-2 rounded-full border border-[#D4AF37]/50 bg-gradient-to-r from-[#D4AF37]/10 to-transparent text-[#D4AF37] text-xs md:text-sm font-bold tracking-wide flex items-center gap-2"><Trophy size={14} className="md:size-[16px]" /> OFFICIAL F1 COLLECTOR SERIES</span>
-                </motion.div>
-                <motion.h1 custom={0.2} initial="hidden" animate="visible" variants={textVariants} className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black ${getTextColor()} leading-tight mb-4 md:mb-6`}>Race Ready. <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#FCEEAC] to-[#D4AF37] animate-gradient">Miniature Speed.</span></motion.h1>
-                <motion.p custom={0.4} initial="hidden" animate="visible" variants={textVariants} className={`${getSecondaryTextColor()} text-sm md:text-lg max-w-lg mx-auto lg:mx-0 mb-6 md:mb-10 leading-relaxed`}>Experience the thrill of the track with our ultra-realistic, precision-engineered diecast Formula 1 collection.</motion.p>
-                <motion.div custom={0.6} initial="hidden" animate="visible" variants={textVariants} className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center lg:justify-start">
-                  <button className="px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-[#D4AF37] to-[#FCEEAC] text-black font-bold text-base md:text-lg rounded-lg md:rounded-xl hover:shadow-lg md:hover:shadow-xl hover:shadow-[#D4AF37]/25 transition-all duration-300 flex items-center justify-center gap-2 md:gap-3 group">Shop Collection <ArrowRight size={18} className="md:size-[20px] group-hover:translate-x-1 transition-transform" /></button>
-                  <button className={`px-6 py-3 md:px-8 md:py-4 ${theme === 'light' ? 'bg-gray-100 border-gray-300 text-gray-800 hover:bg-gray-200' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'} border font-bold text-base md:text-lg rounded-lg md:rounded-xl transition-all duration-300 flex items-center justify-center gap-2 md:gap-3`}>View Gallery <CarFront size={18} className="md:size-[20px]" /></button>
-                </motion.div>
-              </div>
-
-              <div className="relative h-[250px] md:h-[400px] lg:h-[600px] w-full flex items-center justify-center perspective-[800px] md:perspective-[1200px] lg:order-2">
-                 <div className="absolute z-0 w-[200px] h-[200px] md:w-[300px] md:h-[300px] bg-gradient-to-br from-[#D4AF37]/10 to-transparent rounded-full blur-2xl md:blur-3xl" />
-                 {CAR_IMAGES.map((imgSrc, index) => { const variant = getCarVariant(index); if (variant === 'hidden') return null; return ( <motion.div key={index} variants={carVariants} initial="next" animate={variant} className="absolute w-full flex items-center justify-center origin-center" style={{ transformStyle: "preserve-3d" }}><motion.div className="relative" animate={variant === 'active' ? { y: [-8, 8, -8], transition: { duration: 5, repeat: Infinity, ease: easeInOut } } : {}}><img src={imgSrc} alt={`Vehicle ${index}`} className="w-full max-w-[240px] md:max-w-[320px] lg:max-w-[500px] h-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)] md:drop-shadow-[0_35px_60px_rgba(0,0,0,0.9)]" /></motion.div></motion.div> ); })}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className={`relative w-full border-t ${getBorderColor()} ${theme === 'light' ? 'bg-white/60' : 'bg-black/60'} backdrop-blur-lg mt-8 md:mt-12 py-4 md:py-6`}>
-           <div className={`absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r ${theme === 'light' ? 'from-white' : 'from-black'} to-transparent z-10 pointer-events-none`} />
-           <div className={`absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l ${theme === 'light' ? 'from-white' : 'from-black'} to-transparent z-10 pointer-events-none`} />
-           <div className="flex overflow-hidden">
-              <motion.div className="flex items-center gap-8 md:gap-16 lg:gap-24 px-6 md:px-12" animate={{ x: "-50%" }} transition={{ duration: 30, ease: "linear", repeat: Infinity }}>
-                 {[...BRAND_LOGOS, ...BRAND_LOGOS].map((brand, i) => ( <div key={`${brand.name}-${i}`} className="group relative flex-shrink-0 cursor-pointer"><img src={brand.src} alt={brand.name} className={`h-8 md:h-10 lg:h-12 w-auto object-contain transition-all duration-500 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-110 md:group-hover:scale-125 ${theme === 'light' ? 'grayscale opacity-50' : 'grayscale opacity-40'}`} /></div> ))}
-              </motion.div>
-           </div>
-        </div>
-      </section>
+      {/* MEMOIZED SECTIONS TO PREVENT UNNECESSARY RE-RENDERS */}
+      <HeroSection theme={theme} isMobile={isMobile} />
 
       {/* TRENDING NOW */}
       <section className={`relative py-12 md:py-24 ${getSectionBackground()} border-t ${getBorderColor()}`}>
@@ -1191,7 +1173,7 @@ export default function LandingPage() {
             <button className={`group flex items-center gap-2 md:gap-3 ${getTextColor()} font-bold hover:text-[#D4AF37] transition-colors px-4 py-2 md:px-6 md:py-3 rounded-lg md:rounded-xl border ${getBorderColor()} hover:border-[#D4AF37]/50 text-sm md:text-base`}>View All <ArrowRight size={16} className="md:size-[20px] group-hover:translate-x-1 transition-transform" /></button>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
-             {TRENDING_VIDEOS.map((video, index) => ( <VideoCard key={video.id} video={video} index={index} theme={theme} /> ))}
+              {TRENDING_VIDEOS.map((video, index) => ( <VideoCard key={video.id} video={video} index={index} theme={theme} /> ))}
           </div>
         </div>
       </section>
@@ -1207,7 +1189,6 @@ export default function LandingPage() {
           
           <StudioShowcase videos={VINTAGE_VIDEOS} theme={theme} />
           
-          {/* REFINED RALLEYZ SECTION */}
           <RalleyzSection theme={theme} />
 
           <CharacterSlider theme={theme} />
@@ -1223,7 +1204,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* NEW FOOTER SECTION */}
       <Footer theme={theme} />
     </div>
   );
