@@ -2,14 +2,55 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, easeInOut, easeOut, AnimatePresence } from 'framer-motion';
-import { ArrowRight, CarFront, Trophy, Play, Pause, Volume2, VolumeX, ChevronLeft, ChevronRight, Maximize2, Sparkles, Star, Gift, Rocket, Brain, Music, Palette, Bot, Gamepad2, MessageSquare, User, Twitter, Instagram, Facebook, Youtube, Send, Mail, Zap, ShoppingBag, Heart, Baby, School, GraduationCap, Building2, Wand2, Gauge, X, CheckCircle2, Check, MapPin } from 'lucide-react';
+import { 
+  ArrowRight, CarFront, Trophy, Play, Pause, Volume2, VolumeX, 
+  ChevronLeft, ChevronRight, Maximize2, Sparkles, Star, Gift, 
+  Rocket, Brain, Music, Palette, Bot, Gamepad2, MessageSquare, 
+  User, Twitter, Instagram, Facebook, Youtube, Send, Mail, Zap, 
+  ShoppingBag, Heart, Baby, School, GraduationCap, Building2, 
+  Wand2, Gauge, X, CheckCircle2, Check, MapPin, Flag 
+} from 'lucide-react';
 
-// --- CLOUDINARY CONFIGURATION ---
-const CLOUD_NAME = "duh5z2zjr"; 
-const FOLDER_NAME = "wow-lifestyle";
-const CLOUD_BASE = `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/f_auto,q_auto/${FOLDER_NAME}`;
+// --- RALLEYZ DATA (Updated with Alignment & Missing Props) ---
+const RALLEYZ_ITEMS = [
+  { 
+    id: 1, 
+    title: "Big Volt Rover Remote Control Car", 
+    location: "Rocky Terrain",
+    img: "/pngcar.png", 
+    bg: "/chars/bg1.avif" 
+  },
+  { 
+    id: 2, 
+    title: "Land Rover Range Rover SUV", 
+    location: "Urban Jungle",
+    img: "/pngcar2.png", 
+    bg: "/chars/bg2.avif" 
+  },
+  { 
+    id: 3, 
+    title: "X-Spray Monster 2.4 GHz Racer", 
+    location: "Dirt Track",
+    img: "/pngbike2.png", 
+    bg: "/chars/bg3.avif" 
+  },
+  { 
+    id: 4, 
+    title: "Twisted Remote Control Stunt Car", 
+    location: "Stunt Arena",
+    img: "/pngcar3.png", 
+    bg: "/chars/bg4.avif" 
+  },
+  { 
+    id: 5, 
+    title: "High Speed Undcad Off Roader",
+    location: "Sand Dunes",
+    img: "/pngcar4.png", 
+    bg: "/chars/bg5.avif" 
+  },
+];
 
-// --- ASSETS CONFIGURATION ---
+// --- OTHER ASSETS ---
 const TRENDING_VIDEOS = [
   { id: 1, title: "F1 Racing Collection", category: "Premium", views: "2.4M", duration: "0:45", src: `https://res.cloudinary.com/duh5z2zjr/video/upload/v1769314436/f1_tn2jwq.mp4` },
   { id: 2, title: "Hot Wheels Ultimate", category: "Limited", views: "1.8M", duration: "1:10", src: `https://res.cloudinary.com/duh5z2zjr/video/upload/v1769314438/hotwheels_wdsfha.mp4` },
@@ -279,7 +320,7 @@ const VideoCard = ({ video, index, theme }: { video: typeof TRENDING_VIDEOS[0], 
   );
 };
 
-// --- NEW EXPANDABLE BEST SELLERS COMPONENT (Video Style) ---
+// --- EXPANDABLE BEST SELLERS COMPONENT ---
 const BestSellers = ({ theme, onOpenLogin }: { theme: 'dark' | 'light', onOpenLogin: () => void }) => {
     const [activeCard, setActiveCard] = useState(0);
     const [progress, setProgress] = useState(0);
@@ -390,7 +431,191 @@ const BestSellers = ({ theme, onOpenLogin }: { theme: 'dark' | 'light', onOpenLo
     );
 };
 
-// --- REDESIGNED SHOP BY AGE COMPONENT ---
+// --- UPDATED RALLEYZ SECTION (Enhanced Alignment, Animation & 3D Depth) ---
+const RalleyzSection = ({ theme }: { theme: 'dark' | 'light' }) => {
+    const [activeIndex, setActiveIndex] = useState(0);
+    const [progress, setProgress] = useState(0);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const CYCLE_DURATION = 5000; // 5 Seconds per card for better readability
+
+    // Auto Cycle Logic with smoothed progress
+    useEffect(() => {
+        const startTimer = () => {
+            timerRef.current = setInterval(() => {
+                setActiveIndex((prev) => (prev + 1) % RALLEYZ_ITEMS.length);
+                setProgress(0);
+            }, CYCLE_DURATION);
+        };
+
+        startTimer();
+
+        // High frequency update for smoother progress bar
+        const progressInterval = setInterval(() => {
+            setProgress((prev) => {
+                const next = prev + (100 / (CYCLE_DURATION / 16)); 
+                return next > 100 ? 100 : next;
+            });
+        }, 16);
+
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+            clearInterval(progressInterval);
+        };
+    }, [activeIndex]);
+
+    const handleCardClick = (index: number) => {
+        if (timerRef.current) clearInterval(timerRef.current);
+        setActiveIndex(index);
+        setProgress(0);
+        // Restart loop
+        timerRef.current = setInterval(() => {
+            setActiveIndex((prev) => (prev + 1) % RALLEYZ_ITEMS.length);
+            setProgress(0);
+        }, CYCLE_DURATION);
+    };
+
+    // Helper to split title for styling
+    const getTitleParts = (title: string) => {
+        const parts = title.split(" ");
+        const first = parts.slice(0, Math.ceil(parts.length / 2)).join(" ");
+        const rest = parts.slice(Math.ceil(parts.length / 2)).join(" ");
+        return { first, rest };
+    };
+
+    return (
+        <section className={`relative h-[700px] md:h-[900px] w-full overflow-hidden flex flex-col justify-end pb-12 ${theme === 'light' ? 'bg-gray-100' : 'bg-black'}`}>
+            
+            {/* BACKGROUND LAYER (Parallax & Breathing Effect) */}
+            <div className="absolute inset-0 z-0 bg-black">
+                <AnimatePresence mode='popLayout'>
+                    <motion.div
+                        key={RALLEYZ_ITEMS[activeIndex].id}
+                        initial={{ opacity: 0, scale: 1.1 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1.5, ease: "easeInOut" }} 
+                        className="absolute inset-0"
+                    >
+                         <img 
+                            src={RALLEYZ_ITEMS[activeIndex].bg} 
+                            alt="Background" 
+                            className="w-full h-full object-cover opacity-60"
+                         />
+                         {/* Enhanced Gradient Overlays for Readability */}
+                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/10" />
+                         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent" />
+                         {/* Radial Vignette */}
+                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]" />
+                    </motion.div>
+                </AnimatePresence>
+            </div>
+
+            {/* MAIN CONTENT CONTAINER */}
+            <div className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-8 flex flex-col h-full pt-24 md:pt-32">
+                
+                {/* Text Content - Floating with staggered animation */}
+                <div className="max-w-4xl mt-auto mb-12 md:mb-16">
+                     <motion.div 
+                        key={`subtitle-${activeIndex}`}
+                        initial={{ opacity: 0, x: -30 }} 
+                        animate={{ opacity: 1, x: 0 }} 
+                        transition={{ duration: 0.6, ease: easeOut }}
+                        className="flex items-center gap-3 mb-6"
+                     >
+                         <div className="h-[2px] w-12 bg-[#D4AF37]" />
+                         <span className="text-[#D4AF37] text-sm md:text-base font-bold tracking-[0.25em] uppercase drop-shadow-md">
+                             {RALLEYZ_ITEMS[activeIndex].location}
+                         </span>
+                     </motion.div>
+                     
+                     <motion.h2 
+                        key={`title-${activeIndex}`}
+                        initial={{ opacity: 0, y: 30 }} 
+                        animate={{ opacity: 1, y: 0 }} 
+                        transition={{ delay: 0.1, duration: 0.8, ease: easeOut }}
+                        className="text-5xl md:text-7xl lg:text-8xl font-black text-white uppercase tracking-tighter leading-[0.9] drop-shadow-2xl"
+                     >
+                        {getTitleParts(RALLEYZ_ITEMS[activeIndex].title).first} <br/>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#FCEEAC]">
+                            {getTitleParts(RALLEYZ_ITEMS[activeIndex].title).rest}
+                        </span>
+                     </motion.h2>
+
+                     <motion.div
+                        key={`desc-${activeIndex}`}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.3, duration: 0.8 }}
+                        className="mt-8 flex flex-col md:flex-row gap-6 md:items-center"
+                     >
+                        <p className="text-gray-300 max-w-md text-sm md:text-lg leading-relaxed font-light border-l-2 border-white/20 pl-4">
+                            Engineered for the {RALLEYZ_ITEMS[activeIndex].location}. Experience precision control and raw power with the {RALLEYZ_ITEMS[activeIndex].title}.
+                        </p>
+                        
+                        <motion.button
+                            whileHover={{ scale: 1.05, backgroundColor: "#ffffff", color: "#000000" }}
+                            whileTap={{ scale: 0.95 }}
+                            className="px-8 py-4 rounded-full border border-white/40 text-white bg-white/5 backdrop-blur-md font-bold tracking-widest uppercase text-xs md:text-sm flex items-center gap-3 w-fit transition-all shadow-lg hover:shadow-white/20"
+                        >
+                            <Play size={16} fill="currentColor" /> Discover Model
+                        </motion.button>
+                     </motion.div>
+                </div>
+
+                {/* BOTTOM CARDS SELECTOR (Horizontal Layout) */}
+                <div className="w-full pb-8">
+                    <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 snap-x">
+                        {RALLEYZ_ITEMS.map((item, index) => {
+                            const isActive = index === activeIndex;
+                            return (
+                                <motion.div
+                                    key={item.id}
+                                    layout
+                                    onClick={() => handleCardClick(index)}
+                                    className={`relative flex-shrink-0 snap-center rounded-xl overflow-hidden cursor-pointer transition-all duration-500 border border-white/10 group
+                                        ${isActive ? 'w-[200px] md:w-[260px] h-[140px] shadow-[0_0_20px_rgba(212,175,55,0.3)] ring-1 ring-[#D4AF37]/50' : 'w-[140px] h-[140px] opacity-50 hover:opacity-80 grayscale hover:grayscale-0'}
+                                    `}
+                                >
+                                    <img 
+                                        src={item.bg} 
+                                        alt={item.title} 
+                                        className="w-full h-full object-cover"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                                    
+                                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                                        {isActive ? (
+                                            <motion.div initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}}>
+                                                <p className="text-[10px] text-[#D4AF37] font-bold uppercase tracking-wider mb-1">Active View</p>
+                                                <h4 className="text-white text-xs font-bold leading-tight line-clamp-2">{item.title}</h4>
+                                            </motion.div>
+                                        ) : (
+                                            <h4 className="text-white/70 text-[10px] font-medium leading-tight line-clamp-2 group-hover:text-white transition-colors">{item.title}</h4>
+                                        )}
+                                    </div>
+
+                                    {/* Progress Bar for Active Card */}
+                                    {isActive && (
+                                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+                                            <motion.div 
+                                                className="h-full bg-[#D4AF37]"
+                                                initial={{ width: "0%" }}
+                                                animate={{ width: "100%" }}
+                                                transition={{ duration: CYCLE_DURATION / 1000, ease: "linear" }}
+                                            />
+                                        </div>
+                                    )}
+                                </motion.div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+};
+
+// --- SHOP BY AGE COMPONENT ---
 const ShopByAge = ({ theme }: { theme: 'dark' | 'light' }) => {
     return (
         <section className={`py-12 md:py-24 relative overflow-hidden ${theme === 'light' ? 'bg-white' : 'bg-black'} border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/5'}`}>
@@ -982,11 +1207,13 @@ export default function LandingPage() {
           
           <StudioShowcase videos={VINTAGE_VIDEOS} theme={theme} />
           
+          {/* REFINED RALLEYZ SECTION */}
+          <RalleyzSection theme={theme} />
+
           <CharacterSlider theme={theme} />
 
           <BestSellers theme={theme} onOpenLogin={() => setIsLoginOpen(true)} />
 
-          {/* NEW SHOP BY AGE SECTION ADDED HERE */}
           <ShopByAge theme={theme} />
 
           <BentoGrid theme={theme} />
