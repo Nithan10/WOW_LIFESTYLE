@@ -19,6 +19,7 @@ export default function Home() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [isMobile, setIsMobile] = useState(false);
   const mainRef = useRef<HTMLDivElement>(null);
+  const shopByCategoryRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // 1. Initial Setup
@@ -43,18 +44,33 @@ export default function Home() {
     checkMobile();
     window.addEventListener('resize', checkMobile);
 
-    // 4. Initial Theme Check
-    // We check the DOM attribute which layout.tsx has already set
+    // 4. Check URL hash for section scrolling
+    const handleHashChange = () => {
+      if (window.location.hash === '#shop-by-category' && shopByCategoryRef.current) {
+        setTimeout(() => {
+          shopByCategoryRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    };
+
+    // Check on initial load
+    setTimeout(handleHashChange, 500);
+
+    // Listen for hash changes
+    window.addEventListener('hashchange', handleHashChange);
+
+    // 5. Initial Theme Check
     const currentTheme = document.documentElement.getAttribute('data-theme') as 'dark' | 'light';
     if (currentTheme) setTheme(currentTheme);
 
     return () => {
       clearTimeout(timer);
       window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('hashchange', handleHashChange);
     };
   }, []);
 
-  // 5. Listen for Theme Changes from Layout.tsx
+  // 6. Listen for Theme Changes from Layout.tsx
   useEffect(() => {
     const handleThemeChange = (event: CustomEvent) => {
       const newTheme = event.detail as 'dark' | 'light';
@@ -68,7 +84,7 @@ export default function Home() {
     return () => {
       window.removeEventListener('theme-change', handleThemeChange as EventListener);
     };
-  }, []); // Empty dependency array is fine here as we just want the listener attached once
+  }, []);
 
   // Scroll fix after loading
   useEffect(() => {
@@ -92,7 +108,12 @@ export default function Home() {
           <CharacterSliderSection theme={theme} />
           <BestSellersSection theme={theme} />
           <ShopByAgeSection theme={theme} />
-          <ShopByCategorySection theme={theme} />
+          
+          {/* Add anchor for category navigation */}
+          <div id="shop-by-category" ref={shopByCategoryRef}>
+            <ShopByCategorySection theme={theme} />
+          </div>
+          
           <BentoGridSection theme={theme} />
           <ReviewSection theme={theme} />
         </div>
