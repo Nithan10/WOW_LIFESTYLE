@@ -114,11 +114,11 @@ const stats = [
 ];
 
 export default function ServicesPage() {
-  const [hoveredService, setHoveredService] = useState(null);
+  const [hoveredService, setHoveredService] = useState<number | null>(null);
   const [activeCategory, setActiveCategory] = useState("All");
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [videoPlaying, setVideoPlaying] = useState(false);
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], [0, -300]);
@@ -132,7 +132,8 @@ export default function ServicesPage() {
   const smoothYScroll = useSpring(y, { stiffness: 100, damping: 30 });
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
+    // Fixed: Added MouseEvent type for the global window listener
+    const handleMouseMove = (e: MouseEvent) => {
       mouseX.set(e.clientX);
       mouseY.set(e.clientY);
       setMousePosition({ x: e.clientX, y: e.clientY });
@@ -152,18 +153,16 @@ export default function ServicesPage() {
     <div 
       className="min-h-screen bg-gradient-to-br from-[#FCFBFA] via-amber-50/30 to-cyan-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-gray-900 overflow-hidden relative selection:bg-[#D4AF37]/30"
       ref={containerRef}
-      onMouseMove={(e) => {
+      onMouseMove={(e: React.MouseEvent) => {
         mouseX.set(e.clientX);
         mouseY.set(e.clientY);
       }}
     >
       {/* Animated Background Elements */}
       <div className="fixed inset-0 pointer-events-none">
-        {/* Gradient orbs */}
         <div className="absolute top-1/4 -left-40 w-[800px] h-[800px] bg-gradient-to-r from-[#D4AF37]/10 to-amber-500/10 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 -right-40 w-[800px] h-[800px] bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-full blur-3xl" />
         
-        {/* Floating shapes */}
         {[...Array(20)].map((_, i) => (
           <motion.div
             key={i}
@@ -184,7 +183,7 @@ export default function ServicesPage() {
               top: `${Math.random() * 100}%`,
             }}
           >
-            <div className={`w-${Math.floor(Math.random() * 6) + 2} h-${Math.floor(Math.random() * 6) + 2} rounded-full bg-gradient-to-r ${
+            <div className={`w-4 h-4 rounded-full bg-gradient-to-r ${
               i % 4 === 0 ? 'from-[#D4AF37]/10 to-amber-500/10' :
               i % 4 === 1 ? 'from-blue-500/10 to-cyan-500/10' :
               i % 4 === 2 ? 'from-purple-500/10 to-pink-500/10' :
@@ -218,7 +217,6 @@ export default function ServicesPage() {
         </motion.div>
 
         <div className="relative z-10 text-center px-4">
-          {/* Animated badge */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9, rotate: -5 }}
             animate={{ opacity: 1, scale: 1, rotate: 0 }}
@@ -229,7 +227,6 @@ export default function ServicesPage() {
             <Crown size={16} />
           </motion.div>
 
-          {/* Main heading with gradient animation */}
           <div className="relative mb-8">
             <motion.h1 
               initial={{ opacity: 0, scale: 0.8 }}
@@ -269,7 +266,6 @@ export default function ServicesPage() {
             From drone deliveries to restoration labs, discover the art of exceptional service.
           </motion.p>
 
-          {/* Animated CTA button */}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -298,7 +294,6 @@ export default function ServicesPage() {
           </motion.button>
         </div>
 
-        {/* Floating decorative icons */}
         <div className="absolute inset-0 pointer-events-none z-5">
           <FloatingElement icon={<Rocket />} delay={0} color="from-purple-500 to-pink-500" />
           <FloatingElement icon={<Gift />} delay={1} color="from-amber-500 to-yellow-500" />
@@ -323,7 +318,7 @@ export default function ServicesPage() {
               >
                 <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl p-6 text-center border border-gray-200/50 dark:border-gray-800/50 shadow-xl h-full">
                   <div className={`inline-flex p-3 rounded-xl bg-gradient-to-r ${stat.color} bg-opacity-10 mb-4`}>
-                    <stat.icon className={`w-6 h-6 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`} />
+                    <stat.icon className={`w-6 h-6 text-amber-500`} />
                   </div>
                   <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
                     {stat.value}
@@ -332,7 +327,6 @@ export default function ServicesPage() {
                     {stat.label}
                   </div>
                 </div>
-                {/* Hover glow effect */}
                 <div className={`absolute inset-0 bg-gradient-to-r ${stat.color} opacity-0 group-hover:opacity-20 blur-xl rounded-2xl transition-opacity duration-300 -z-10`} />
               </motion.div>
             ))}
@@ -376,10 +370,10 @@ export default function ServicesPage() {
       {/* 4. Interactive Services Grid */}
       <section className="max-w-7xl mx-auto px-4 mb-32 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <AnimatePresence>
+          <AnimatePresence mode='wait'>
             {filteredServices.map((service, index) => (
               <motion.div
-                key={index}
+                key={service.title}
                 initial={{ opacity: 0, y: 50, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
@@ -392,21 +386,17 @@ export default function ServicesPage() {
                 onMouseLeave={() => setHoveredService(null)}
                 className="relative group"
               >
-                {/* Glow effect on hover */}
                 <div className={`absolute -inset-4 bg-gradient-to-r ${service.color} opacity-0 group-hover:opacity-20 blur-xl rounded-3xl transition-opacity duration-300`} />
                 
                 <div className={`relative h-full ${service.bgColor} backdrop-blur-sm rounded-3xl p-8 border border-gray-200/50 dark:border-gray-800/50 shadow-2xl overflow-hidden`}>
-                  {/* Price tag */}
                   <div className="absolute top-6 right-6 px-3 py-1 bg-white dark:bg-gray-800 rounded-full text-sm font-bold text-gray-900 dark:text-white">
                     {service.price}
                   </div>
                   
-                  {/* Service tag */}
                   <div className="absolute top-6 left-6 text-xs font-bold uppercase tracking-wider text-[#D4AF37]">
                     {service.tag}
                   </div>
                   
-                  {/* Icon with animation */}
                   <motion.div
                     animate={{ rotate: hoveredService === index ? 360 : 0 }}
                     transition={{ duration: 0.6 }}
@@ -419,17 +409,14 @@ export default function ServicesPage() {
                     </div>
                   </motion.div>
                   
-                  {/* Title */}
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 group-hover:text-[#D4AF37] transition-colors">
                     {service.title}
                   </h3>
                   
-                  {/* Description */}
                   <p className="text-gray-600 dark:text-gray-400 text-sm mb-6 leading-relaxed">
                     {service.description}
                   </p>
                   
-                  {/* Features */}
                   <div className="space-y-2 mb-8">
                     {service.features.map((feature, i) => (
                       <div key={i} className="flex items-center gap-2">
@@ -439,7 +426,6 @@ export default function ServicesPage() {
                     ))}
                   </div>
                   
-                  {/* CTA button */}
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -454,7 +440,7 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* 5. Interactive Service Showcase */}
+      {/* 5. Showcase Section */}
       <section className="py-32 relative overflow-hidden">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-20">
@@ -473,14 +459,12 @@ export default function ServicesPage() {
           </div>
 
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left side - Video showcase */}
             <div className="relative">
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 className="relative rounded-[3rem] overflow-hidden shadow-2xl"
               >
                 <div className="aspect-video bg-gradient-to-br from-gray-900 to-black">
-                  {/* Video placeholder */}
                   <div className="absolute inset-0 flex items-center justify-center">
                     <motion.button
                       whileHover={{ scale: 1.1 }}
@@ -490,15 +474,13 @@ export default function ServicesPage() {
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-[#D4AF37] to-amber-300 rounded-full blur-xl opacity-75 group-hover/play:opacity-100 transition-opacity" />
                       <div className="relative w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-2xl pl-2">
-                        <Play size={40} fill="#D4AF37" className="text-[#D4AF37]" />
+                        <Play size={40} className="text-[#D4AF37]" fill="currentColor" />
                       </div>
                     </motion.button>
                   </div>
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               </motion.div>
               
-              {/* Floating info cards */}
               <motion.div
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -517,24 +499,11 @@ export default function ServicesPage() {
               </motion.div>
             </div>
 
-            {/* Right side - Features */}
             <div className="space-y-8">
               {[
-                {
-                  icon: <Award />,
-                  title: "Award-Winning Service",
-                  description: "Recognized globally for exceptional customer experience and innovation"
-                },
-                {
-                  icon: <TrendingUp />,
-                  title: "Growing Community",
-                  description: "Join 10,000+ families who trust us with their magical moments"
-                },
-                {
-                  icon: <Package />,
-                  title: "Sustainable Packaging",
-                  description: "Eco-friendly materials without compromising on luxury"
-                }
+                { icon: <Award />, title: "Award-Winning Service", description: "Recognized globally for exceptional customer experience." },
+                { icon: <TrendingUp />, title: "Growing Community", description: "Join 10,000+ families who trust our magical moments." },
+                { icon: <Package />, title: "Sustainable Packaging", description: "Eco-friendly materials without compromising on luxury." }
               ].map((item, i) => (
                 <motion.div
                   key={i}
@@ -542,21 +511,14 @@ export default function ServicesPage() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
-                  whileHover={{ x: 10 }}
                   className="flex items-center gap-6 p-6 rounded-2xl bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border border-gray-200/50 dark:border-gray-800/50"
                 >
-                  <div className="w-14 h-14 bg-gradient-to-r from-[#D4AF37]/10 to-amber-500/10 rounded-xl flex items-center justify-center">
-                    <div className="text-[#D4AF37]">
-                      {item.icon}
-                    </div>
+                  <div className="w-14 h-14 bg-gradient-to-r from-[#D4AF37]/10 to-amber-500/10 rounded-xl flex items-center justify-center text-[#D4AF37]">
+                    {item.icon}
                   </div>
                   <div>
-                    <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                      {item.title}
-                    </h4>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      {item.description}
-                    </p>
+                    <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{item.title}</h4>
+                    <p className="text-gray-600 dark:text-gray-400">{item.description}</p>
                   </div>
                 </motion.div>
               ))}
@@ -565,14 +527,13 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* 6. Final CTA with Particle Effect */}
+      {/* 6. Final CTA */}
       <section className="py-32 relative overflow-hidden">
         <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
           <motion.div
             initial={{ scale: 0 }}
             whileInView={{ scale: 1 }}
             viewport={{ once: true }}
-            transition={{ type: "spring", damping: 20 }}
             className="inline-block mb-12"
           >
             <div className="relative">
@@ -591,22 +552,16 @@ export default function ServicesPage() {
             Ready for Your <span className="text-[#D4AF37]">WOW</span> Moment?
           </h2>
           
-          <p className="text-xl text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Transform ordinary play into extraordinary memories with our premium services. 
-            Where imagination meets exceptional service.
-          </p>
-
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="group relative px-12 py-5 bg-gradient-to-r from-[#D4AF37] to-amber-400 text-white font-bold rounded-full text-lg shadow-2xl shadow-amber-500/30 overflow-hidden"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-[#D4AF37] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <span className="relative flex items-center gap-3">
                 <Sparkles size={24} />
                 Start Your Journey
-                <ChevronRight className="group-hover:translate-x-2 transition-transform" />
+                <ChevronRight />
               </span>
             </motion.button>
             
@@ -624,16 +579,20 @@ export default function ServicesPage() {
             </Link>
           </div>
         </div>
-
-        {/* Particle effect */}
         <ParticleEffect />
       </section>
     </div>
   );
 }
 
-// Floating Element Component
-function FloatingElement({ icon, delay = 0, color = "from-[#D4AF37] to-amber-400" }) {
+// Sub-components with TypeScript
+interface FloatingProps {
+  icon: React.ReactNode;
+  delay?: number;
+  color?: string;
+}
+
+function FloatingElement({ icon, delay = 0, color = "from-[#D4AF37] to-amber-400" }: FloatingProps) {
   return (
     <motion.div
       className="absolute"
@@ -653,16 +612,13 @@ function FloatingElement({ icon, delay = 0, color = "from-[#D4AF37] to-amber-400
         top: `${30 + delay * 10}%`,
       }}
     >
-      <div className={`w-16 h-16 bg-gradient-to-r ${color} rounded-2xl flex items-center justify-center shadow-xl`}>
-        <div className="text-white">
-          {icon}
-        </div>
+      <div className={`w-16 h-16 bg-gradient-to-r ${color} rounded-2xl flex items-center justify-center shadow-xl text-white`}>
+        {icon}
       </div>
     </motion.div>
   );
 }
 
-// Particle Effect Component
 function ParticleEffect() {
   return (
     <div className="absolute inset-0 pointer-events-none">
@@ -671,9 +627,7 @@ function ParticleEffect() {
           key={i}
           className="absolute w-2 h-2 rounded-full"
           style={{
-            background: `radial-gradient(circle, ${
-              i % 3 === 0 ? '#D4AF37' : i % 3 === 1 ? '#60A5FA' : '#F472B6'
-            } 0%, transparent 70%)`,
+            background: i % 3 === 0 ? '#D4AF37' : i % 3 === 1 ? '#60A5FA' : '#F472B6',
           }}
           animate={{
             y: [0, -1000],
@@ -686,12 +640,6 @@ function ParticleEffect() {
             repeat: Infinity,
             delay: i * 0.05,
             ease: "linear"
-          }}
-          initial={{
-            y: 0,
-            x: Math.sin(i) * 100,
-            scale: 0,
-            opacity: 0
           }}
         />
       ))}

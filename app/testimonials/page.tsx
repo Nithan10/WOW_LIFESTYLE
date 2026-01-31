@@ -115,9 +115,9 @@ const categories = ["All", "Gifting", "Repairs", "Restoration", "Events", "Educa
 export default function TestimonialsPage() {
   const [mounted, setMounted] = useState(false);
   const [activeCategory, setActiveCategory] = useState("All");
-  const [hoveredCard, setHoveredCard] = useState(null);
+  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const [videoPlaying, setVideoPlaying] = useState(false);
-  const scrollContainerRef = useRef(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -133,7 +133,7 @@ export default function TestimonialsPage() {
     ? reviews 
     : reviews.filter(review => review.category === activeCategory);
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: React.MouseEvent) => {
     mouseX.set(e.clientX);
     mouseY.set(e.clientY);
   };
