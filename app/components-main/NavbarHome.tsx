@@ -13,7 +13,14 @@ interface NavbarProps {
   toggleTheme: () => void;
 }
 
-// Update component to use these props
+// Navigation Links Configuration
+const navLinks = [
+  { name: 'Home', path: '/' },
+  { name: 'Our Services', path: '/services' },
+  { name: 'About Us', path: '/about' },
+  { name: 'Testimonials', path: '/testimonials' },
+];
+
 export default function NavbarHome({ theme, toggleTheme }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -27,6 +34,11 @@ export default function NavbarHome({ theme, toggleTheme }: NavbarProps) {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
+
+  // Close mobile menu when path changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   // Dynamic Styles
   const getNavbarBackground = () => {
@@ -71,18 +83,23 @@ export default function NavbarHome({ theme, toggleTheme }: NavbarProps) {
               </span>
             </Link>
 
-            {/* Desktop Links */}
+            {/* Desktop Links - UPDATED TO NAVIGATE TO /services */}
             <div className="hidden lg:flex items-center space-x-8">
-              {['Home', 'New Arrivals', 'Collections', 'Toys & Gadgets', 'Sale'].map((item) => (
-                <Link key={item} href="/" className={`text-sm font-medium ${linkColor} transition-colors`}>
-                  {item}
+              {navLinks.map((link) => (
+                <Link 
+                  key={link.name} 
+                  href={link.path} 
+                  className={`text-sm font-medium transition-colors ${
+                    pathname === link.path ? 'text-[#D4AF37]' : linkColor
+                  }`}
+                >
+                  {link.name}
                 </Link>
               ))}
             </div>
 
             {/* Right Icons */}
             <div className="flex items-center space-x-5">
-              {/* THEME TOGGLE: Calls the function passed from Layout */}
               <button
                 onClick={toggleTheme}
                 className={`p-2 rounded-full transition-colors ${
@@ -99,6 +116,32 @@ export default function NavbarHome({ theme, toggleTheme }: NavbarProps) {
             </div>
           </div>
         </div>
+
+        {/* Mobile Menu Overlay */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className={`lg:hidden border-t ${theme === 'light' ? 'bg-white border-gray-100' : 'bg-black border-white/10'}`}
+            >
+              <div className="px-4 pt-2 pb-6 space-y-1">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    href={link.path}
+                    className={`block px-3 py-4 text-base font-medium rounded-md ${
+                      pathname === link.path ? 'text-[#D4AF37] bg-[#D4AF37]/5' : linkColor
+                    }`}
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.nav>
     </>
   );
