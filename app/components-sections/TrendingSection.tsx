@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState, useEffect, useRef, memo } from 'react';
-import { motion, easeInOut, useInView } from 'framer-motion';
-import { ArrowRight, Zap, Play, Pause, Volume2, VolumeX, Search, ZoomIn } from 'lucide-react';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { ArrowRight, Zap, Play, Pause, Volume2, VolumeX, ChevronRight } from 'lucide-react';
 
 const TRENDING_VIDEOS = [
   { id: 1, title: "F1 Racing Collection", category: "Premium", views: "2.4M", duration: "0:45", src: `https://res.cloudinary.com/duh5z2zjr/video/upload/v1769314436/f1_tn2jwq.mp4` },
-  { id: 2, title: "Hot Wheels Ultimate", category: "Limited", views: "1.8M", duration: "1:10", src: `https://res.cloudinary.com/duh5z2zjr/video/upload/v1769314438/hotwheels_wdsfha.mp4` },
+  { id: 2, title: "Kei Swap", category: "Limited", views: "1.8M", duration: "1:10", src: `https://res.cloudinary.com/duh5z2zjr/video/upload/v1769314438/hotwheels_wdsfha.mp4` },
   { id: 3, title: "JRC Heavy Duty", category: "Exclusive", views: "3.2M", duration: "0:38", src: `https://res.cloudinary.com/duh5z2zjr/video/upload/v1769314438/jcb_qbokn9.mp4` },
   { id: 4, title: "RC Speedsters", category: "Elite", views: "4.1M", duration: "1:25", src: `https://res.cloudinary.com/duh5z2zjr/video/upload/v1769314440/rc_zxsclo.mp4` },
   { id: 5, title: "Micro Racers", category: "Collector's", views: "1.2M", duration: "0:52", src: `https://res.cloudinary.com/duh5z2zjr/video/upload/v1769314439/minirc_ssoyay.mp4` },
@@ -19,7 +19,6 @@ interface TrendingSectionProps {
   theme: 'dark' | 'light';
 }
 
-// Optimized Video Card Component
 const VideoCard = memo(({ video, index, theme }: { video: typeof TRENDING_VIDEOS[0], index: number, theme: 'dark' | 'light' }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -29,25 +28,25 @@ const VideoCard = memo(({ video, index, theme }: { video: typeof TRENDING_VIDEOS
   const [progress, setProgress] = useState(0);
 
   const isInView = useInView(containerRef, { margin: "0px 0px -100px 0px" });
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     if (videoRef.current) {
       if (isInView && isPlaying) {
-        const playPromise = videoRef.current.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(() => {});
-        }
+        videoRef.current.play().catch(() => {});
       } else {
         videoRef.current.pause();
       }
     }
   }, [isInView, isPlaying]);
 
-  const togglePlay = () => {
+  const togglePlay = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsPlaying(!isPlaying);
   };
 
-  const toggleMute = () => {
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (videoRef.current) {
       videoRef.current.muted = !videoRef.current.muted;
       setIsMuted(!isMuted);
@@ -68,9 +67,6 @@ const VideoCard = memo(({ video, index, theme }: { video: typeof TRENDING_VIDEOS
     return () => clearInterval(interval);
   }, [isPlaying, isInView]);
 
-  const getCardGradient = () => theme === 'light' ? 'bg-gradient-to-br from-gray-50 to-gray-100' : 'bg-gradient-to-br from-neutral-900 to-black';
-  const getBorderColor = () => theme === 'light' ? (isHovered ? 'border-[#B8860B]/50' : 'border-gray-200') : (isHovered ? 'border-[#D4AF37]/50' : 'border-white/10');
-
   return (
     <motion.div
       ref={containerRef}
@@ -81,7 +77,10 @@ const VideoCard = memo(({ video, index, theme }: { video: typeof TRENDING_VIDEOS
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
       onClick={togglePlay}
-      className={`group relative ${getCardGradient()} rounded-2xl overflow-hidden cursor-pointer shadow-lg md:shadow-2xl border ${getBorderColor()} transition-all duration-500 will-change-transform`}
+      className={`group relative rounded-2xl overflow-hidden cursor-pointer shadow-lg md:shadow-2xl border transition-all duration-500 will-change-transform
+        ${isDark ? 'bg-neutral-900 border-white/10' : 'bg-white border-gray-200'}
+        ${isHovered ? (isDark ? 'border-[#D4AF37]/50 scale-[1.02]' : 'border-[#B8860B]/50 scale-[1.02]') : ''}
+      `}
     >
       <div className="relative w-full aspect-[9/16] overflow-hidden">
         <video 
@@ -92,28 +91,67 @@ const VideoCard = memo(({ video, index, theme }: { video: typeof TRENDING_VIDEOS
           preload="none"
           crossOrigin="anonymous"
           src={video.src} 
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 will-change-transform" 
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 will-change-transform" 
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-        <motion.div animate={{ opacity: isHovered ? 0.3 : 0.1 }} className="absolute inset-0 bg-gradient-to-tr from-[#D4AF37]/20 via-transparent to-[#D4AF37]/10" />
+        
+        {/* Adaptive Overlays for Text Legibility */}
+        <div className={`absolute inset-0 transition-opacity duration-500 
+          ${isDark 
+            ? 'bg-gradient-to-t from-black via-black/40 to-transparent opacity-80' 
+            : 'bg-gradient-to-t from-gray-900/60 via-transparent to-transparent opacity-40'}
+        `} />
       </div>
+
       <div className="absolute inset-0 p-4 md:p-5 flex flex-col justify-between z-20">
         <div className="flex justify-between items-start">
-          <motion.div initial={{ x: -20, opacity: 0 }} animate={isHovered ? { x: 0, opacity: 1 } : {}} className="flex flex-col gap-2">
-            <span className={`bg-gradient-to-r from-[#D4AF37] to-[#FCEEAC] text-black text-xs font-bold px-3 py-1.5 rounded-full w-fit ${theme === 'light' ? 'shadow-md' : ''}`}>{video.category}</span>
+          <motion.div 
+            initial={{ opacity: 0, x: -10 }} 
+            animate={{ opacity: 1, x: 0 }}
+            className="flex flex-col gap-2"
+          >
+            <span className="bg-gradient-to-r from-[#D4AF37] to-[#FCEEAC] text-black text-[10px] md:text-xs font-black px-3 py-1 rounded-full w-fit shadow-lg uppercase tracking-wider">
+              {video.category}
+            </span>
           </motion.div>
-          <motion.div initial={{ x: 20, opacity: 0 }} animate={isHovered ? { x: 0, opacity: 1 } : {}} className="flex gap-2">
-            <button className={`p-2 md:p-2.5 backdrop-blur-md rounded-full hover:bg-[#D4AF37] transition-colors ${theme === 'light' ? 'bg-white/80' : 'bg-black/50'}`} onClick={(e) => { e.stopPropagation(); toggleMute(); }}>{isMuted ? <VolumeX size={14} className="md:size-[16px]" /> : <Volume2 size={14} className="md:size-[16px]" />}</button>
-          </motion.div>
+          
+          <button 
+            className={`p-2 rounded-full backdrop-blur-md transition-all hover:scale-110
+              ${isDark ? 'bg-black/50 text-white border-white/10' : 'bg-white/80 text-gray-900 border-gray-200 shadow-sm'}
+              border
+            `} 
+            onClick={toggleMute}
+          >
+            {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+          </button>
         </div>
-        <div className="space-y-2 md:space-y-3">
-          <motion.h3 animate={isHovered ? { y: 0 } : { y: 10 }} className={`text-base md:text-xl font-bold leading-tight ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>{video.title}</motion.h3>
-          <div className={`h-1 rounded-full overflow-hidden ${theme === 'light' ? 'bg-gray-200' : 'bg-white/10'}`}>
-            <motion.div animate={{ width: `${progress}%` }} className="h-full bg-gradient-to-r from-[#D4AF37] to-[#FCEEAC]" />
+
+        <div className="space-y-2">
+          <h3 className={`text-sm md:text-lg font-black leading-tight drop-shadow-md transition-colors
+            ${isDark ? 'text-white' : 'text-white md:text-gray-900 group-hover:text-[#B8860B]'}
+          `}>
+            {video.title}
+          </h3>
+          
+          <div className={`h-1 rounded-full overflow-hidden ${isDark ? 'bg-white/10' : 'bg-gray-200'}`}>
+            <motion.div 
+              animate={{ width: `${progress}%` }} 
+              className="h-full bg-gradient-to-r from-[#D4AF37] to-[#FCEEAC]" 
+            />
           </div>
         </div>
-        <motion.div animate={{ scale: isPlaying ? (isHovered ? 1.1 : 0) : 1, opacity: isPlaying ? (isHovered ? 1 : 0) : 1 }} className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className={`p-4 md:p-6 backdrop-blur-md rounded-xl md:rounded-2xl border ${theme === 'light' ? 'bg-white/80 border-gray-300' : 'bg-black/50 border-white/20'}`}>{isPlaying ? <Pause size={24} className="md:size-[32px]" /> : <Play size={24} className="md:size-[32px]" />}</div>
+
+        <motion.div 
+          animate={{ 
+            scale: isPlaying ? (isHovered ? 1 : 0) : 1, 
+            opacity: isPlaying ? (isHovered ? 1 : 0) : 1 
+          }} 
+          className="absolute inset-0 flex items-center justify-center pointer-events-none"
+        >
+          <div className={`p-4 backdrop-blur-md rounded-full border transition-transform
+            ${isDark ? 'bg-black/40 border-white/20 text-white' : 'bg-white/60 border-gray-300 text-gray-900'}
+          `}>
+            {isPlaying ? <Pause size={24} /> : <Play size={24} fill="currentColor" />}
+          </div>
         </motion.div>
       </div>
     </motion.div>
@@ -123,33 +161,50 @@ const VideoCard = memo(({ video, index, theme }: { video: typeof TRENDING_VIDEOS
 VideoCard.displayName = 'VideoCard';
 
 export default function TrendingSection({ theme }: TrendingSectionProps) {
-  const getTextColor = () => theme === 'light' ? 'text-gray-900' : 'text-white';
-  const getSecondaryTextColor = () => theme === 'light' ? 'text-gray-600' : 'text-gray-300';
-  const getBorderColor = () => theme === 'light' ? 'border-gray-200' : 'border-white/10';
-  const getSectionBackground = () => theme === 'light' ? 'bg-gradient-to-b from-gray-50 to-white' : 'bg-gradient-to-b from-[#0a0a0a] to-black';
+  const isDark = theme === 'dark';
 
   return (
-    <section className={`relative py-12 md:py-24 ${getSectionBackground()} border-t ${getBorderColor()}`}>
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[300px] md:h-[500px] bg-gradient-to-b from-[#D4AF37]/10 to-transparent blur-[60px] md:blur-[120px] rounded-full pointer-events-none" />
+    <section className={`relative py-16 md:py-24 transition-colors duration-500 border-t
+      ${isDark ? 'bg-black border-white/10' : 'bg-gray-50 border-gray-200'}
+    `}>
+      {/* Decorative radial gradient */}
+      <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[400px] blur-[100px] pointer-events-none opacity-30
+        ${isDark ? 'bg-[#D4AF37]/20' : 'bg-[#D4AF37]/10'}
+      `} />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-16 gap-4 md:gap-6">
-          <div className="text-center md:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-gradient-to-r from-[#D4AF37]/10 to-transparent border border-[#D4AF37]/20 mb-3 md:mb-4">
-              <Zap size={14} className="md:size-[16px] text-[#D4AF37]" />
-              <span className="text-xs md:text-sm font-bold text-[#D4AF37] tracking-wider">TRENDING NOW</span>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 md:mb-16 gap-6">
+          <div className="space-y-4">
+            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border transition-colors
+              ${isDark ? 'bg-white/5 border-white/10 text-[#D4AF37]' : 'bg-[#D4AF37]/10 border-[#D4AF37]/20 text-[#B8860B]'}
+            `}>
+              <Zap size={14} fill="currentColor" />
+              <span className="text-xs font-black tracking-[0.2em] uppercase">Trending Now</span>
             </div>
-            <h2 className={`text-2xl md:text-4xl lg:text-6xl font-black ${getTextColor()} mb-3 md:mb-4`}>
+            
+            <h2 className={`text-4xl md:text-6xl font-black tracking-tighter transition-colors
+              ${isDark ? 'text-white' : 'text-gray-900'}
+            `}>
               Hot <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#FCEEAC]">Drops</span>
             </h2>
-            <p className={`${getSecondaryTextColor()} text-sm md:text-lg max-w-xl`}>
-              See what's hot in the collector's world this week.
+            
+            <p className={`text-sm md:text-lg max-w-lg font-medium transition-colors
+              ${isDark ? 'text-gray-400' : 'text-gray-600'}
+            `}>
+              Discover the most coveted R/C and scale models dominating the community this week.
             </p>
           </div>
-          <button className={`group flex items-center gap-2 md:gap-3 ${getTextColor()} font-bold hover:text-[#D4AF37] transition-colors px-4 py-2 md:px-6 md:py-3 rounded-lg md:rounded-xl border ${getBorderColor()} hover:border-[#D4AF37]/50 text-sm md:text-base`}>
-            View All <ArrowRight size={16} className="md:size-[20px] group-hover:translate-x-1 transition-transform" />
+
+          <button className={`group flex items-center gap-3 font-black text-sm px-6 py-3 rounded-full border transition-all
+            ${isDark 
+              ? 'text-white border-white/10 hover:border-[#D4AF37]/50 hover:bg-white/5' 
+              : 'text-gray-900 border-gray-300 hover:border-[#B8860B] hover:bg-gray-100'}
+          `}>
+            EXPLORE ALL <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
           {TRENDING_VIDEOS.map((video, index) => (
             <VideoCard key={video.id} video={video} index={index} theme={theme} />
           ))}

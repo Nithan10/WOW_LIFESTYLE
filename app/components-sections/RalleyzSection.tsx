@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, memo } from 'react';
+import React, { useState, useEffect, memo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 
@@ -60,18 +60,16 @@ const RalleyzSection = memo(({ theme }: RalleyzSectionProps) => {
   
   // --- Auto-Play Logic ---
   useEffect(() => {
-    const startTime = Date.now();
+    const step = 50; // Update every 50ms
     const interval = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const newProgress = (elapsed / AUTO_PLAY_DURATION) * 100;
-      
-      if (newProgress >= 100) {
-        setActive((prev) => (prev + 1) % RALLEYZ_ITEMS.length);
-        setProgress(0);
-      } else {
-        setProgress(newProgress);
-      }
-    }, 50);
+      setProgress((prev) => {
+        if (prev >= 100) {
+          setActive((current) => (current + 1) % RALLEYZ_ITEMS.length);
+          return 0;
+        }
+        return prev + (step / AUTO_PLAY_DURATION) * 100;
+      });
+    }, step);
 
     return () => clearInterval(interval);
   }, [active]);
@@ -85,17 +83,15 @@ const RalleyzSection = memo(({ theme }: RalleyzSectionProps) => {
   const isDark = theme === 'dark';
 
   return (
-    // Outer Wrapper: Dynamic Background based on Theme
     <section 
-      className={`w-full min-h-screen py-12 px-4 md:px-8 flex justify-center items-center transition-colors duration-500
-        ${isDark ? 'bg-zinc-950' : 'bg-gray-100'}
+      className={`w-full min-h-screen py-12 px-4 md:px-8 flex justify-center items-center transition-colors duration-700
+        ${isDark ? 'bg-zinc-950' : 'bg-gray-200'}
       `}
     >
-      
       {/* --- Main Unique Container --- */}
-      <div className="relative w-full max-w-6xl h-[600px] rounded-[2.5rem] overflow-hidden shadow-2xl ring-1 ring-black/5 group select-none">
+      <div className="relative w-full max-w-6xl h-[600px] rounded-[2.5rem] overflow-hidden shadow-2xl ring-1 ring-black/5 group select-none bg-zinc-900">
         
-        {/* 1. Background Layer with Hover Zoom Effect */}
+        {/* 1. Background Layer */}
         <AnimatePresence mode="popLayout">
           <motion.div
             key={activeItem.id}
@@ -105,16 +101,14 @@ const RalleyzSection = memo(({ theme }: RalleyzSectionProps) => {
             transition={{ duration: 0.8, ease: "easeInOut" }}
             className="absolute inset-0 z-0"
           >
-            {/* The image subtly zooms when you hover the main container */}
             <div className="w-full h-full transition-transform duration-[2000ms] group-hover:scale-110">
                 <img
-                src={activeItem.bg}
-                alt={activeItem.title}
-                className="w-full h-full object-cover brightness-[0.75]" 
+                  src={activeItem.bg}
+                  alt={activeItem.title}
+                  className="w-full h-full object-cover brightness-[0.75]" 
                 />
             </div>
             
-            {/* Gradient Overlays for Text Readability */}
             <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
           </motion.div>
@@ -127,41 +121,40 @@ const RalleyzSection = memo(({ theme }: RalleyzSectionProps) => {
 
         {/* 3. Text Content */}
         <div className="absolute top-1/2 -translate-y-1/2 left-8 md:left-16 z-30 max-w-sm md:max-w-xl">
-           <motion.div
-             key={`content-${active}`}
-             initial={{ opacity: 0, x: -30 }}
-             animate={{ opacity: 1, x: 0 }}
-             transition={{ delay: 0.1, duration: 0.5 }}
-           >
-              {/* Location Tag */}
-              <div className="flex items-center gap-3 mb-6">
-                <span className="w-2 h-2 rounded-full bg-[#D4AF37] shadow-[0_0_15px_#D4AF37]" />
-                <span className="text-[#D4AF37] text-sm font-bold tracking-[0.25em] uppercase shadow-black drop-shadow-md">
-                  {activeItem.location}
-                </span>
-              </div>
-
-              {/* Title */}
-              <h1 className="text-5xl md:text-7xl font-black text-white uppercase leading-[0.9] mb-6 tracking-tighter drop-shadow-2xl">
-                {activeItem.title}
-              </h1>
-
-              {/* Description */}
-              <p className="text-zinc-200 text-base leading-relaxed mb-8 font-light max-w-md drop-shadow-lg border-l-2 border-[#D4AF37]/50 pl-5">
-                {activeItem.description}
-              </p>
-
-              {/* CTA Button */}
-              <button className="flex items-center gap-4 text-white text-sm font-bold uppercase tracking-widest group/btn hover:text-[#D4AF37] transition-colors">
-                View Specs
-                <div className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center group-hover/btn:bg-[#D4AF37] group-hover/btn:border-[#D4AF37] group-hover/btn:text-black transition-all">
-                  <ChevronRight className="w-4 h-4" />
+           <AnimatePresence mode="wait">
+             <motion.div
+               key={`content-${active}`}
+               initial={{ opacity: 0, x: -30 }}
+               animate={{ opacity: 1, x: 0 }}
+               exit={{ opacity: 0, x: 20 }}
+               transition={{ duration: 0.5 }}
+             >
+                <div className="flex items-center gap-3 mb-6">
+                  <span className="w-2 h-2 rounded-full bg-[#D4AF37] shadow-[0_0_15px_#D4AF37]" />
+                  <span className="text-[#D4AF37] text-sm font-bold tracking-[0.25em] uppercase drop-shadow-md">
+                    {activeItem.location}
+                  </span>
                 </div>
-              </button>
-           </motion.div>
+
+                <h1 className="text-5xl md:text-7xl font-black text-white uppercase leading-[0.9] mb-6 tracking-tighter drop-shadow-2xl">
+                  {activeItem.title}
+                </h1>
+
+                <p className="text-zinc-200 text-base leading-relaxed mb-8 font-light max-w-md drop-shadow-lg border-l-2 border-[#D4AF37]/50 pl-5">
+                  {activeItem.description}
+                </p>
+
+                <button className="flex items-center gap-4 text-white text-sm font-bold uppercase tracking-widest group/btn hover:text-[#D4AF37] transition-colors">
+                  View Specs
+                  <div className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center group-hover/btn:bg-[#D4AF37] group-hover/btn:border-[#D4AF37] group-hover/btn:text-black transition-all">
+                    <ChevronRight className="w-4 h-4" />
+                  </div>
+                </button>
+             </motion.div>
+           </AnimatePresence>
         </div>
 
-        {/* 4. Compact Interactive Carousel (Bottom Right) */}
+        {/* 4. Compact Interactive Carousel */}
         <div className="absolute bottom-8 right-8 z-30 flex gap-3 h-28 md:h-32 items-end">
            {RALLEYZ_ITEMS.map((item, index) => {
              const isActive = index === active;
@@ -183,7 +176,6 @@ const RalleyzSection = memo(({ theme }: RalleyzSectionProps) => {
                  />
                  <div className="absolute inset-0 bg-black/20" />
                  
-                 {/* Active State Details inside mini card */}
                  {isActive && (
                     <motion.div 
                       initial={{ opacity: 0 }} 
@@ -193,7 +185,6 @@ const RalleyzSection = memo(({ theme }: RalleyzSectionProps) => {
                       <p className="text-[#D4AF37] text-[10px] uppercase font-bold tracking-wider truncate mb-1">{item.subtitle}</p>
                       <p className="text-white text-sm font-bold leading-none truncate">{item.title}</p>
                       
-                      {/* Mini Progress Bar */}
                       <div className="w-full h-[2px] bg-white/20 mt-2 rounded-full overflow-hidden">
                         <motion.div 
                            className="h-full bg-[#D4AF37]"
@@ -206,7 +197,6 @@ const RalleyzSection = memo(({ theme }: RalleyzSectionProps) => {
              )
            })}
         </div>
-
       </div>
     </section>
   );
@@ -219,25 +209,42 @@ export default function RalleyzSectionComponent() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   useEffect(() => {
-    // 1. Initial Check on Mount
-    const savedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null;
-    if (savedTheme) {
-      setTheme(savedTheme);
-    } else {
-      // Fallback to what is currently set on the document root by NavbarHome
-      const currentAttr = document.documentElement.getAttribute('data-theme') as 'dark' | 'light' | null;
-      if (currentAttr) setTheme(currentAttr);
-    }
+    // Function to resolve theme from DOM
+    const resolveTheme = () => {
+      const docTheme = document.documentElement.getAttribute('data-theme');
+      const hasDarkClass = document.documentElement.classList.contains('dark');
+      
+      if (docTheme === 'light' || (!hasDarkClass && docTheme !== 'dark')) {
+        return 'light';
+      }
+      return 'dark';
+    };
 
-    // 2. Listen for 'themechange' event dispatched by NavbarHome
-    const handleThemeChange = (e: CustomEvent< 'dark' | 'light' >) => {
-      setTheme(e.detail);
+    // Initial Set
+    setTheme(resolveTheme());
+
+    // 1. Observe attribute changes (e.g., data-theme="light")
+    const observer = new MutationObserver(() => {
+      setTheme(resolveTheme());
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme', 'class'],
+    });
+
+    // 2. Custom Event Listener (backup for specific navbar implementations)
+    const handleThemeChange = (e: any) => {
+      const newTheme = e.detail?.theme || e.detail;
+      if (newTheme === 'light' || newTheme === 'dark') {
+        setTheme(newTheme);
+      }
     };
 
     window.addEventListener('themechange', handleThemeChange as EventListener);
     
-    // Cleanup listener
     return () => {
+      observer.disconnect();
       window.removeEventListener('themechange', handleThemeChange as EventListener);
     };
   }, []);
