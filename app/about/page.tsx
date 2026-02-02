@@ -1,385 +1,596 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import Image from 'next/image';
-import { motion, useScroll, useTransform, useSpring, useMotionValue, useAnimation, AnimatePresence } from 'framer-motion';
-import { Heart, Rocket, Users, Globe, Target, Sparkles, Star, Gift, Zap, Crown, Play, ChevronRight, ShoppingBag, Package, Award, Layers, Wind, Clock } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { 
+  ArrowUpRight, Bookmark, Sparkles, 
+  ChevronRight, ShieldCheck, Truck, RotateCcw, 
+  MapPin, Award, Star, Gift, 
+  Smile, Globe2, Shield, Rocket, Headphones, Globe
+} from 'lucide-react';
 
-// --- Data ---
-const values = [
+// --- Editorial Content Data ---
+const FEATURED_ARTICLE = {
+  category: "Heritage & History",
+  title: "A Dream Fulfilled: From a Cornish Shop to the World's Finest",
+  excerpt: "In 1760, William Hamley set out to create 'the best toy shop in the world'. Nearly three centuries later, that dream continues to spark joy in over 170 locations globally.",
+  author: "WOW Lifestyle Publishing",
+  date: "Feb 02, 2026",
+  readTime: "15 min read",
+  image: "https://images.unsplash.com/photo-1558877385-81a1c7e67d72?auto=format&fit=crop&w=2000&q=80",
+  stats: {
+    years: "265+",
+    stores: "170+",
+    countries: "40+",
+    smiles: "5M+"
+  }
+};
+
+const ARTICLES = [
   {
-    icon: <Heart className="text-rose-500" size={24} />,
-    title: "Curated with Love",
-    text: "We hand-pick every item to ensure it meets our 'WOW' standard of joy.",
-    bgColor: "bg-rose-500/10",
-    delay: 0.1
+    id: 1,
+    category: "Global Magic",
+    title: "Spreading the Joy: How 170 Global Shops Unite Children",
+    image: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=1600&q=80",
+    date: "Jan 28, 2026",
+    excerpt: "From London to Prague to Mumbai, witness the magical experience of live toy demos and character interactions that define WOW Lifestyle.",
+    icon: <Globe2 className="w-5 h-5" />
   },
   {
-    icon: <Rocket className="text-blue-500" size={24} />,
-    title: "Future Play",
-    text: "STEM kits and AI drones bridging traditional play with tomorrow's tech.",
-    bgColor: "bg-blue-500/10",
-    delay: 0.2
+    id: 2,
+    category: "The Experience",
+    title: "A Delightful Experience: Why Interactive Play is Our Core",
+    image: "https://images.unsplash.com/photo-1566576721346-d4a3b4eaad55?auto=format&fit=crop&w=1600&q=80",
+    date: "Jan 25, 2026",
+    excerpt: "Adults get the rare chance to be children again, interacting with favorite characters and watching toys come to life in our live exhibit zones.",
+    icon: <Smile className="w-5 h-5" />
   },
   {
-    icon: <Users className="text-amber-500" size={24} />,
-    title: "Community",
-    text: "Workshops and events that turn customers into a global family.",
-    bgColor: "bg-amber-500/10",
-    delay: 0.3
+    id: 3,
+    category: "Safety First",
+    title: "The Quality Promise: Certified Materials & Ethical Sourcing",
+    image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=1600&q=80",
+    date: "Jan 20, 2026",
+    excerpt: "We don't play around when it comes to quality. Discover our rigorous certification process for every handpicked toy in our collection.",
+    icon: <Shield className="w-5 h-5" />
   },
   {
-    icon: <Globe className="text-emerald-500" size={24} />,
-    title: "Inspiration",
-    text: "Bringing international magic from every corner of the world to you.",
-    bgColor: "bg-emerald-500/10",
-    delay: 0.4
+    id: 4,
+    category: "Toy Innovation",
+    title: "The Future of Play: How Technology Meets Tradition",
+    image: "https://images.unsplash.com/photo-1535223289827-42f1e9919769?auto=format&fit=crop&w=1600&q=80",
+    date: "Jan 15, 2026",
+    excerpt: "Exploring how augmented reality and sustainable materials are shaping the next generation of classic toys.",
+    icon: <Rocket className="w-5 h-5" />
   }
 ];
 
-const featuredToys = [
+const TESTIMONIALS = [
   {
-    name: "Quantum Builder Set",
-    category: "STEM",
-    price: "$89.99",
-    image: "https://images.unsplash.com/photo-1594787318281-bc0e1b5d0a0d?auto=format&fit=crop&w=800",
-    rating: 4.9,
-    color: "from-blue-500 to-cyan-500"
+    name: "Priya Sharma",
+    role: "Mother & Educator",
+    content: "The heritage collection brought back childhood memories while creating new ones for my kids. Truly magical!",
+    rating: 5,
+    location: "Mumbai"
   },
   {
-    name: "Galaxy Explorer Drone",
-    category: "Tech",
-    price: "$149.99",
-    image: "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800",
-    rating: 4.8,
-    color: "from-purple-500 to-pink-500"
+    name: "Arjun Mehta",
+    role: "Toy Collector",
+    content: "The authenticity and quality of their limited edition collectibles is unmatched in India. A curator's dream.",
+    rating: 5,
+    location: "Delhi"
   },
   {
-    name: "Vintage Restoration",
-    category: "Collectible",
-    price: "$129.99",
-    image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=800",
-    rating: 4.7,
-    color: "from-amber-500 to-orange-500"
+    name: "Sofia Chen",
+    role: "Child Psychologist",
+    content: "WOW's interactive play zones demonstrate how thoughtfully designed toys support cognitive development.",
+    rating: 5,
+    location: "Bangalore"
   }
 ];
 
-const stats = [
-  { value: "10K+", label: "Happy Kids", icon: Heart, color: "text-rose-500" },
-  { value: "500+", label: "Unique Toys", icon: Gift, color: "text-emerald-500" },
-  { value: "50+", label: "Countries", icon: Globe, color: "text-blue-500" },
-  { value: "4.9★", label: "Rating", icon: Star, color: "text-amber-500" }
+const HERITAGE_TIMELINE = [
+  { year: "1760", event: "William Hamley opens 'Noah's Ark' in Cornwall", highlight: true },
+  { year: "1881", event: "First London store opens on Regent Street" },
+  { year: "1955", event: "Royal Warrant granted by Queen Elizabeth II" },
+  { year: "2000", event: "Expansion into Asian markets begins" },
+  { year: "2023", event: "WOW Lifestyle launches in India with 12 stores" },
+  { year: "2026", event: "170+ stores across 40 countries", highlight: true }
 ];
 
-// --- Main Page Component ---
-export default function AboutPage() {
-  const [activeToy, setActiveToy] = useState(0);
+export default function ToyBlogLifestyle() {
+  const [activeTopic, setActiveTopic] = useState("History");
+  const [bookmarked, setBookmarked] = useState(false);
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll();
+  
+  const headerOpacity = useTransform(scrollYProgress, [0, 0.05], [1, 0.95]);
+  const progressWidth = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+  const heroScale = useTransform(scrollYProgress, [0, 0.5], [1, 1.05]);
 
-  // Parallax effects
-  const yHero = useTransform(scrollYProgress, [0, 0.5], [0, -150]);
-  const opacityHero = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
-
-  // Mouse Glow logic
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const smoothMouseX = useSpring(mouseX, { stiffness: 500, damping: 30 });
-  const smoothMouseY = useSpring(mouseY, { stiffness: 500, damping: 30 });
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [mouseX, mouseY]);
+  // Fixed SVG pattern with proper URL encoding
+  const svgPattern = "url(\"data:image/svg+xml,%3Csvg%20width='60'%20height='60'%20viewBox='0%200%2060%2060'%20xmlns='http://www.w3.org/2000/svg'%3E%3Cg%20fill='none'%20fill-rule='evenodd'%3E%3Cg%20fill='%23D4AF37'%20fill-opacity='0.05'%3E%3Cpath%20d='M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")";
 
   return (
-    <div className="min-h-screen bg-[#FCFBFA] dark:bg-gray-950 overflow-x-hidden" ref={containerRef}>
+    <div className="min-h-screen bg-gradient-to-b from-[#FAF8F5] to-white dark:from-[#0A0A0A] dark:to-[#1A1A1A] text-gray-900 dark:text-gray-100 selection:bg-[#D4AF37]/30" ref={containerRef}>
       
-      {/* Background Decor */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-amber-200/20 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-200/20 rounded-full blur-[120px]" />
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#D4AF37]/5 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl" />
       </div>
 
-      {/* Interactive Mouse Glow */}
-      <motion.div
-        className="fixed w-[600px] h-[600px] pointer-events-none rounded-full blur-[100px] z-0 opacity-40 md:opacity-100"
-        style={{
-          x: smoothMouseX,
-          y: smoothMouseY,
-          translateX: "-50%",
-          translateY: "-50%",
-          background: "radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%)"
-        }}
+      {/* Editorial Progress Tracker */}
+      <motion.div 
+        className="fixed top-0 left-0 h-1 bg-gradient-to-r from-[#D4AF37] via-yellow-500 to-amber-300 z-50 shadow-[0_0_20px_#D4AF37]"
+        style={{ width: progressWidth }}
+        initial={{ scaleX: 0 }}
+        animate={{ scaleX: 1 }}
+        transition={{ duration: 2, ease: "easeInOut" }}
       />
 
-      {/* 1. Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-4 pt-20">
-        <motion.div style={{ y: yHero, opacity: opacityHero }} className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1534120247760-c44c3e4a62f1?auto=format&fit=crop&w=2070')] bg-cover bg-center opacity-10 dark:opacity-5" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#FCFBFA] dark:via-gray-950 to-[#FCFBFA] dark:to-gray-950" />
-        </motion.div>
-
-        <div className="relative z-10 text-center w-full max-w-6xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-block px-4 py-2 mb-6 border border-[#D4AF37]/50 rounded-full text-[#D4AF37] text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase bg-white/50 dark:bg-gray-900/50 backdrop-blur-md"
+      {/* 1. Magazine Branding Header */}
+      <motion.header 
+        style={{ opacity: headerOpacity }}
+        className="sticky top-0 z-40 w-full bg-gradient-to-b from-white/95 to-white/80 dark:from-black/95 dark:to-black/80 backdrop-blur-xl border-b border-gray-100/50 dark:border-white/5 px-6 py-5 shadow-sm"
+      >
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <motion.div 
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            className="flex flex-col group cursor-pointer"
           >
-            <Sparkles className="inline-block mr-2" size={14} /> The World of WOW
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-[#D4AF37] rounded-full animate-pulse" />
+              <span className="text-[10px] font-black tracking-[0.4em] text-[#D4AF37] uppercase mb-1">Established 1760</span>
+            </div>
+            <h1 className="text-2xl font-black tracking-tighter uppercase italic leading-none">
+              <span className="bg-gradient-to-r from-[#D4AF37] via-amber-500 to-yellow-400 bg-clip-text text-transparent">
+                WOW Lifestyle
+              </span>
+            </h1>
           </motion.div>
-
-          <motion.h1 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-7xl md:text-[10rem] lg:text-[12rem] font-black leading-[0.8] tracking-tighter mb-4"
-          >
-            <span className="bg-gradient-to-r from-[#D4AF37] via-amber-300 to-yellow-500 bg-clip-text text-transparent">WOW</span>
-          </motion.h1>
-
-          <motion.h2 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-2xl md:text-5xl lg:text-6xl font-bold mb-8 text-gray-800 dark:text-gray-100"
-          >
-            LIFESTYLE <span className="text-[#D4AF37]">TOYS</span>
-          </motion.h2>
-
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="text-sm md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-10 px-4 leading-relaxed"
-          >
-            Where imagination meets innovation, creating moments of pure joy for families worldwide.
-          </motion.p>
-
-          <motion.button 
-             initial={{ opacity: 0, y: 20 }}
-             animate={{ opacity: 1, y: 0 }}
-             transition={{ delay: 0.6 }}
-             whileHover={{ scale: 1.05 }}
-             className="w-full sm:w-auto px-10 py-5 bg-[#D4AF37] text-white font-bold rounded-2xl shadow-xl shadow-amber-500/20 flex items-center justify-center gap-3 mx-auto"
-          >
-            <ShoppingBag size={20} /> Start Your Journey <ChevronRight size={20} />
-          </motion.button>
-        </div>
-      </section>
-
-      {/* 2. Stats Section */}
-      <section className="relative z-20 px-4 -mt-10 mb-20 md:mb-32">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-            {stats.map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md p-4 md:p-8 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-xl text-center"
+          
+          <nav className="hidden md:flex gap-8 items-center">
+            {["History", "Global Shops", "Interactive Play", "Safety", "Collections", "Events"].map(topic => (
+              <motion.button 
+                key={topic}
+                onClick={() => setActiveTopic(topic)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`relative px-3 py-2 text-[11px] font-bold uppercase tracking-widest transition-all ${
+                  activeTopic === topic 
+                    ? 'text-[#D4AF37]' 
+                    : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+                }`}
               >
-                <stat.icon className={`w-5 h-5 md:w-8 md:h-8 mx-auto mb-3 ${stat.color}`} />
-                <div className="text-2xl md:text-4xl font-black">{stat.value}</div>
-                <div className="text-[10px] md:text-xs uppercase tracking-widest text-gray-500 font-bold">{stat.label}</div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 3. Interactive Collection Showcase */}
-      <section className="py-20 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12 md:mb-20">
-            <h2 className="text-3xl md:text-5xl font-black mb-4">
-              <span className="text-[#D4AF37]">Signature</span> Collection
-            </h2>
-            <p className="text-gray-500 text-sm md:text-base">Explore our hand-picked magic</p>
-          </div>
-
-          <div className="grid lg:grid-cols-12 gap-8 items-center">
-            {/* Active Toy Display */}
-            <div className="lg:col-span-8">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeToy}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="relative aspect-[4/5] md:aspect-video rounded-[2rem] overflow-hidden shadow-2xl"
-                >
-                  <img 
-                    src={featuredToys[activeToy].image} 
-                    alt={featuredToys[activeToy].name}
-                    className="absolute inset-0 w-full h-full object-cover"
+                {topic}
+                {activeTopic === topic && (
+                  <motion.div 
+                    layoutId="underline"
+                    className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-[#D4AF37] to-yellow-400"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                  
-                  <div className="absolute bottom-6 left-6 right-6 md:bottom-10 md:left-10 text-white">
-                    <span className="px-3 py-1 bg-[#D4AF37] rounded-full text-[10px] font-bold uppercase mb-4 inline-block tracking-widest">
-                      {featuredToys[activeToy].category}
-                    </span>
-                    <h3 className="text-3xl md:text-5xl font-black mb-2">{featuredToys[activeToy].name}</h3>
-                    <div className="flex items-center gap-4 text-xl md:text-2xl font-bold text-amber-400">
-                      {featuredToys[activeToy].price}
-                      <div className="flex gap-1">
-                        {[...Array(5)].map((_, i) => <Star key={i} size={16} className="fill-current" />)}
-                      </div>
+                )}
+              </motion.button>
+            ))}
+          </nav>
+
+          <motion.div 
+            initial={{ x: 20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            className="flex items-center gap-4"
+          >
+            <button className="hidden sm:flex items-center gap-2 text-[10px] font-black uppercase tracking-widest bg-gradient-to-r from-[#D4AF37] to-amber-500 text-white px-5 py-2.5 rounded-full hover:shadow-lg hover:shadow-[#D4AF37]/25 transition-all duration-300">
+              <MapPin size={14} />
+              Store Locator
+            </button>
+            <button 
+              onClick={() => setBookmarked(!bookmarked)}
+              className="p-2.5 rounded-full border border-gray-200 dark:border-white/10 hover:border-[#D4AF37] transition-colors"
+            >
+              <Bookmark size={18} className={bookmarked ? "fill-[#D4AF37] text-[#D4AF37]" : ""} />
+            </button>
+          </motion.div>
+        </div>
+      </motion.header>
+
+      {/* 2. Hero Section: The History Narrative */}
+      <section className="relative w-full pt-20 pb-32 px-6 overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="grid lg:grid-cols-12 gap-16 items-start"
+          >
+            {/* Left Column - Content */}
+            <div className="lg:col-span-7">
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="flex items-center gap-4 mb-10"
+              >
+                <span className="px-5 py-2 bg-gradient-to-r from-black to-gray-800 dark:from-[#D4AF37] dark:to-amber-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full inline-flex items-center gap-2">
+                  <Sparkles size={12} />
+                  The Heritage Story
+                </span>
+                <div className="h-px w-16 bg-gradient-to-r from-gray-300 to-transparent" />
+                <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">A Dream Realized</span>
+              </motion.div>
+              
+              <motion.h2 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-5xl md:text-7xl lg:text-8xl font-black leading-[0.95] tracking-tighter mb-10"
+              >
+                <span className="bg-gradient-to-b from-gray-900 via-gray-800 to-black dark:from-white dark:via-gray-200 dark:to-gray-400 bg-clip-text text-transparent">
+                  {FEATURED_ARTICLE.title.split(':')[0]}
+                </span>
+                <br />
+                <span className="text-[#D4AF37] italic">{FEATURED_ARTICLE.title.split(':')[1]}</span>
+              </motion.h2>
+
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-12 leading-relaxed max-w-3xl font-light italic pl-6 border-l-4 border-[#D4AF37]/30"
+              >
+                {FEATURED_ARTICLE.excerpt}
+              </motion.p>
+
+              {/* Stats Grid */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12"
+              >
+                {Object.entries(FEATURED_ARTICLE.stats).map(([key, value]) => (
+                  <div key={key} className="text-center p-4 bg-white/50 dark:bg-black/30 rounded-2xl border border-gray-100 dark:border-white/5">
+                    <div className="text-3xl font-black text-[#D4AF37] mb-2">{value}</div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                      {key.replace(/([A-Z])/g, ' $1')}
                     </div>
                   </div>
-                </motion.div>
-              </AnimatePresence>
+                ))}
+              </motion.div>
+
+              <motion.button 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="group flex items-center gap-4 text-[12px] font-black uppercase tracking-[0.3em] hover:text-[#D4AF37] transition-colors"
+              >
+                <span className="relative">
+                  Explore Heritage Timeline
+                  <span className="absolute -bottom-1 left-0 w-0 group-hover:w-full h-0.5 bg-[#D4AF37] transition-all duration-300" />
+                </span>
+                <div className="w-14 h-14 rounded-full border-2 border-gray-200 dark:border-white/10 flex items-center justify-center group-hover:bg-gradient-to-r group-hover:from-[#D4AF37] group-hover:to-amber-500 group-hover:border-transparent transition-all duration-500 group-hover:rotate-90">
+                  <ChevronRight size={20} className="group-hover:text-white" />
+                </div>
+              </motion.button>
             </div>
 
-            {/* Selection List */}
-            <div className="lg:col-span-4 flex md:grid gap-4 overflow-x-auto pb-4 md:pb-0 no-scrollbar">
-              {featuredToys.map((toy, i) => (
-                <button
-                  key={toy.name}
-                  onClick={() => setActiveToy(i)}
-                  className={`flex-shrink-0 w-64 md:w-full p-4 rounded-2xl transition-all text-left border ${
-                    activeToy === i 
-                    ? 'bg-[#D4AF37]/10 border-[#D4AF37] ring-4 ring-[#D4AF37]/5' 
-                    : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800'
-                  }`}
+            {/* Right Column - Image */}
+            <div className="lg:col-span-5">
+              <motion.div 
+                style={{ scale: heroScale }}
+                className="relative aspect-[3/4] overflow-hidden rounded-[3rem] shadow-2xl group"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-[#D4AF37]/20 to-transparent z-10" />
+                <img 
+                  src={FEATURED_ARTICLE.image} 
+                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110"
+                  alt="Vintage Toy Shop"
+                />
+                <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-20">
+                  <div className="text-white">
+                    <div className="text-6xl font-black italic mb-2">1760</div>
+                    <div className="text-sm font-light opacity-90">The year magic began</div>
+                  </div>
+                </div>
+                {/* Floating Elements */}
+                <div className="absolute top-6 right-6 w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20">
+                  <Sparkles size={20} className="text-white" />
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 3. Heritage Timeline */}
+      <section className="py-24 bg-gradient-to-b from-white to-gray-50 dark:from-[#0F0F0F] dark:to-[#1A1A1A]">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-20">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="inline-flex items-center gap-3 mb-6"
+            >
+              <div className="w-12 h-px bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
+              <span className="text-[#D4AF37] text-xs font-black uppercase tracking-widest">Timeline</span>
+              <div className="w-12 h-px bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
+            </motion.div>
+            <h3 className="text-5xl font-black mb-6">
+              <span className="bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 dark:from-white dark:via-gray-300 dark:to-white bg-clip-text text-transparent">
+                265 Years of 
+              </span>
+              <span className="text-[#D4AF37] block italic">Joy & Innovation</span>
+            </h3>
+          </div>
+
+          <div className="relative">
+            {/* Timeline Line */}
+            <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-0.5 bg-gradient-to-b from-[#D4AF37] via-amber-400 to-transparent" />
+            
+            {/* Timeline Items */}
+            <div className="space-y-24">
+              {HERITAGE_TIMELINE.map((item, index) => (
+                <motion.div
+                  key={item.year}
+                  initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className={`relative flex items-center ${index % 2 === 0 ? 'justify-start' : 'justify-end'}`}
                 >
-                  <div className="flex gap-4 items-center">
-                    <img src={toy.image} className="w-16 h-16 rounded-xl object-cover" alt="" />
-                    <div>
-                      <div className="font-bold text-sm dark:text-white">{toy.name}</div>
-                      <div className="text-xs text-gray-500">{toy.category}</div>
-                      <div className="text-[#D4AF37] font-bold mt-1">{toy.price}</div>
+                  <div className={`w-5/12 ${index % 2 === 0 ? 'text-right pr-12' : 'text-left pl-12'}`}>
+                    <div className={`inline-block p-6 rounded-2xl bg-white dark:bg-[#111] border border-gray-100 dark:border-white/5 shadow-lg hover:shadow-xl transition-shadow ${
+                      item.highlight ? 'border-l-4 border-l-[#D4AF37]' : ''
+                    }`}>
+                      <div className="text-3xl font-black text-[#D4AF37] mb-2">{item.year}</div>
+                      <p className="text-gray-700 dark:text-gray-300">{item.event}</p>
                     </div>
                   </div>
-                </button>
+                  {/* Timeline Dot */}
+                  <div className="absolute left-1/2 transform -translate-x-1/2 w-6 h-6 rounded-full bg-gradient-to-r from-[#D4AF37] to-amber-400 border-4 border-white dark:border-[#0F0F0F] shadow-lg" />
+                </motion.div>
               ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* 4. Core Values */}
-      <section className="py-20 px-4 bg-gray-50 dark:bg-gray-900/50">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
-            {values.map((val, i) => (
+      {/* 4. The Promise Section - FIXED SVG */}
+      <section className="py-24 relative overflow-hidden">
+        {/* Background Pattern - Fixed with proper encoding */}
+        <div 
+          className="absolute inset-0"
+          style={{ backgroundImage: svgPattern }}
+        />
+        
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="text-center mb-20">
+            <motion.div 
+              initial={{ scale: 0 }}
+              whileInView={{ scale: 1 }}
+              className="w-20 h-20 bg-gradient-to-r from-[#D4AF37] to-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-lg"
+            >
+              <Award size={32} className="text-white" />
+            </motion.div>
+            <h3 className="text-5xl font-black uppercase mb-4">
+              Our <span className="text-[#D4AF37] italic">Gold Standard</span> Promise
+            </h3>
+            <p className="text-gray-500 uppercase tracking-widest text-sm font-bold max-w-2xl mx-auto">
+              Where centuries of heritage meet modern excellence in every detail
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              { 
+                icon: <RotateCcw />, 
+                title: "Hassle-Free Returns", 
+                desc: "30-day return policy on all unopened items. Your satisfaction is our priority.",
+                color: "from-emerald-500 to-teal-400"
+              },
+              { 
+                icon: <ShieldCheck />, 
+                title: "Certified Safety", 
+                desc: "All toys meet or exceed international safety standards. Regular third-party testing.",
+                color: "from-blue-500 to-cyan-400"
+              },
+              { 
+                icon: <Truck />, 
+                title: "Free Express Delivery", 
+                desc: "Free shipping above ₹999. Same-day delivery available in metro cities.",
+                color: "from-purple-500 to-pink-400"
+              },
+              { 
+                icon: <Headphones />, 
+                title: "Dedicated Support", 
+                desc: "24/7 customer care with toy experts. We're here to help you choose the perfect gift.",
+                color: "from-orange-500 to-red-400"
+              }
+            ].map((promise, i) => (
               <motion.div
-                key={val.title}
-                initial={{ opacity: 0, y: 20 }}
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: val.delay }}
-                className="p-8 bg-white dark:bg-gray-950 rounded-[2rem] border border-gray-100 dark:border-gray-800 hover:shadow-2xl transition-all group"
+                whileHover={{ y: -10, scale: 1.02 }}
+                transition={{ duration: 0.4 }}
+                className="relative group"
               >
-                <div className={`w-14 h-14 rounded-2xl ${val.bgColor} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                  {val.icon}
+                <div className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl rounded-3xl" style={{
+                  background: `linear-gradient(135deg, ${promise.color.split(' ')[1]}, ${promise.color.split(' ')[3]})`
+                }} />
+                <div className="relative bg-white dark:bg-[#111] p-8 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm group-hover:shadow-xl transition-all duration-300">
+                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${promise.color} flex items-center justify-center mb-6 transform group-hover:rotate-12 transition-transform`}>
+                    {promise.icon}
+                  </div>
+                  <h4 className="text-xl font-black mb-4 group-hover:text-[#D4AF37] transition-colors">{promise.title}</h4>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{promise.desc}</p>
                 </div>
-                <h4 className="text-xl font-bold mb-3 dark:text-white">{val.title}</h4>
-                <p className="text-sm text-gray-500 leading-relaxed">{val.text}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 5. Mobile Responsive Timeline */}
-      <section className="py-20 px-4">
-        <div className="max-w-4xl mx-auto relative">
-          <h2 className="text-3xl md:text-5xl font-black text-center mb-16">The Journey <span className="text-[#D4AF37]">So Far</span></h2>
-          
-          {/* Vertical Line */}
-          <div className="absolute left-6 md:left-1/2 top-32 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-800 -translate-x-1/2 hidden sm:block" />
+      {/* 5. The Global Feed */}
+      <section className="py-24 bg-gradient-to-b from-gray-50 to-white dark:from-[#0A0A0A] dark:to-[#111]">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-20">
+            <div>
+              <div className="inline-flex items-center gap-3 mb-6">
+                <Globe className="text-[#D4AF37]" size={24} />
+                <span className="text-[#D4AF37] text-xs font-black uppercase tracking-widest">Global Chronicles</span>
+              </div>
+              <h3 className="text-5xl font-black uppercase italic tracking-tighter mb-4">
+                Worldwide <span className="text-[#D4AF37]">Toy Revolution</span>
+              </h3>
+              <p className="text-gray-500 text-sm max-w-2xl">
+                From London's Regent Street to Mumbai's flagship store - discover how we're redefining play across continents
+              </p>
+            </div>
+            <button className="mt-6 md:mt-0 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest border-2 border-gray-200 dark:border-white/10 px-6 py-3 rounded-full hover:border-[#D4AF37] hover:text-[#D4AF37] transition-all group">
+              View All Stories
+              <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
 
-          <div className="space-y-12">
-            {[
-              { year: "2024", title: "The Spark", icon: <Sparkles />, side: "left" },
-              { year: "2025", title: "Tech Leap", icon: <Rocket />, side: "right" },
-              { year: "2026", title: "Global Expansion", icon: <Globe />, side: "left" }
-            ].map((milestone, i) => (
-              <motion.div 
-                key={i}
-                className={`flex flex-col sm:flex-row items-center justify-center gap-8 ${milestone.side === 'right' ? 'sm:flex-row-reverse' : ''}`}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {ARTICLES.map((article) => (
+              <motion.article
+                key={article.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                whileHover={{ y: -8 }}
+                className="group relative overflow-hidden rounded-3xl bg-white dark:bg-[#111] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-2xl transition-all duration-500"
               >
-                <div className="w-full sm:w-1/2 flex flex-col items-center sm:items-end sm:text-right">
-                  <div className={`p-6 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-xl w-full ${milestone.side === 'right' ? 'sm:items-start sm:text-left' : ''}`}>
-                    <div className="text-[#D4AF37] font-black text-2xl mb-2">{milestone.year}</div>
-                    <div className="text-xl font-bold mb-2 dark:text-white">{milestone.title}</div>
-                    <p className="text-sm text-gray-500 italic">Redefining play for modern families and explorers.</p>
+                <div className="relative h-48 overflow-hidden">
+                  <img 
+                    src={article.image} 
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    alt={article.title}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <div className="absolute top-4 left-4 flex items-center gap-2">
+                    <div className="p-2 bg-white/10 backdrop-blur-sm rounded-lg">
+                      {article.icon}
+                    </div>
+                    <span className="text-[10px] font-black text-white uppercase tracking-widest">
+                      {article.category}
+                    </span>
                   </div>
                 </div>
                 
-                {/* Center Icon */}
-                <div className="hidden sm:flex w-12 h-12 bg-[#D4AF37] rounded-full items-center justify-center text-white z-10 border-4 border-white dark:border-gray-950">
-                  {milestone.icon}
+                <div className="p-6">
+                  <div className="text-xs text-gray-400 mb-3 font-medium">{article.date}</div>
+                  <h4 className="text-xl font-black mb-4 group-hover:text-[#D4AF37] transition-colors line-clamp-2">
+                    {article.title}
+                  </h4>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 line-clamp-3">
+                    {article.excerpt}
+                  </p>
+                  <button className="text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-2 text-[#D4AF37] group/link">
+                    Read Feature
+                    <ArrowUpRight size={14} className="group-hover/link:translate-x-1 group-hover/link:-translate-y-1 transition-transform" />
+                  </button>
                 </div>
+              </motion.article>
+            ))}
+          </div>
+        </div>
+      </section>
 
-                <div className="w-1/2 hidden sm:block" />
+      {/* 6. Testimonials */}
+      <section className="py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#D4AF37]/5 via-transparent to-amber-500/5" />
+        
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center gap-4 mb-6">
+              {[1,2,3,4,5].map(i => (
+                <Star key={i} className="w-6 h-6 text-[#D4AF37] fill-[#D4AF37]" />
+              ))}
+            </div>
+            <h3 className="text-5xl font-black mb-6">
+              <span className="bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                Voices of 
+              </span>
+              <span className="text-[#D4AF37] block italic">Joy & Trust</span>
+            </h3>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {TESTIMONIALS.map((testimonial, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className="bg-white dark:bg-[#111] p-8 rounded-3xl border border-gray-100 dark:border-white/5 shadow-lg"
+              >
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#D4AF37] to-amber-400 flex items-center justify-center text-white font-bold">
+                    {testimonial.name.charAt(0)}
+                  </div>
+                  <div>
+                    <h4 className="font-bold">{testimonial.name}</h4>
+                    <p className="text-sm text-gray-500">{testimonial.role} • {testimonial.location}</p>
+                  </div>
+                </div>
+                <p className="text-gray-700 dark:text-gray-300 mb-6 italic">"{testimonial.content}"</p>
+                <div className="flex items-center justify-between">
+                  <div className="flex gap-1">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />
+                    ))}
+                  </div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-[#D4AF37]">
+                    Verified Purchase
+                  </div>
+                </div>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 6. Final CTA */}
-      <section className="py-20 px-4 text-center relative overflow-hidden">
-        <div className="max-w-3xl mx-auto relative z-10">
-          <motion.div 
-            animate={{ rotate: 360 }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-            className="w-24 h-24 md:w-32 md:h-32 bg-gradient-to-tr from-[#D4AF37] to-amber-200 rounded-full mx-auto mb-10 flex items-center justify-center text-white blur-sm opacity-50 absolute -top-10 left-1/2 -translate-x-1/2"
-          />
-          <Gift size={64} className="text-[#D4AF37] mx-auto mb-8 relative" />
-          <h2 className="text-4xl md:text-7xl font-black mb-8 leading-tight dark:text-white">
-            Ready for Your <span className="text-[#D4AF37]">WOW</span> Moment?
+      {/* 7. CTA Section */}
+      <section className="py-24 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <motion.div
+            initial={{ scale: 0 }}
+            whileInView={{ scale: 1 }}
+            className="w-24 h-24 bg-gradient-to-r from-[#D4AF37] to-amber-400 rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl"
+          >
+            <Gift size={32} className="text-white" />
+          </motion.div>
+          
+          <h2 className="text-5xl md:text-6xl font-black mb-8">
+            <span className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 dark:from-white dark:via-gray-200 dark:to-white bg-clip-text text-transparent">
+              Experience the Magic 
+            </span>
+            <span className="text-[#D4AF37] block italic">of Centuries</span>
           </h2>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="px-10 py-5 bg-[#D4AF37] text-white font-black rounded-2xl shadow-xl hover:scale-105 transition-transform flex items-center justify-center gap-2">
-              <ShoppingBag /> Start Shopping
-            </button>
-            <button className="px-10 py-5 border-2 border-[#D4AF37] text-[#D4AF37] font-black rounded-2xl hover:bg-[#D4AF37] hover:text-white transition-all">
-              Virtual Tour
-            </button>
+          
+          <p className="text-xl text-gray-600 dark:text-gray-300 mb-12 max-w-2xl mx-auto">
+            Visit our stores to witness history come alive through interactive exhibits, 
+            limited edition collections, and the world's finest toy curation.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-6 justify-center">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-10 py-4 bg-gradient-to-r from-[#D4AF37] to-amber-500 text-white font-black uppercase tracking-widest rounded-full text-sm hover:shadow-2xl hover:shadow-[#D4AF37]/30 transition-all duration-300"
+            >
+              Find Your Nearest Store
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-10 py-4 border-2 border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 font-black uppercase tracking-widest rounded-full text-sm hover:border-[#D4AF37] hover:text-[#D4AF37] transition-all"
+            >
+              Explore Collections
+            </motion.button>
           </div>
         </div>
       </section>
-
-      <style jsx global>{`
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-    </div>
-  );
-}
-
-// Particle Component
-function ParticleEffect() {
-  return (
-    <div className="absolute inset-0 pointer-events-none">
-      {[...Array(20)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-1 h-1 bg-amber-400 rounded-full"
-          animate={{
-            y: [0, -1000],
-            opacity: [0, 1, 0],
-          }}
-          transition={{
-            duration: Math.random() * 5 + 5,
-            repeat: Infinity,
-            delay: Math.random() * 5,
-          }}
-          style={{
-            left: `${Math.random() * 100}%`,
-            top: '100%'
-          }}
-        />
-      ))}
     </div>
   );
 }

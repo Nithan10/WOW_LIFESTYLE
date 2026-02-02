@@ -38,6 +38,16 @@ export default function NavbarHome({ theme, toggleTheme }: NavbarProps) {
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
+  // Enhanced toggleTheme that dispatches custom event
+  const handleThemeToggle = () => {
+    toggleTheme(); // Call parent's toggle function
+    
+    // Dispatch custom event for other components to listen to
+    window.dispatchEvent(new CustomEvent('themeChange', { 
+      detail: { theme: theme === 'dark' ? 'light' : 'dark' }
+    }));
+  };
+
   const getNavbarBackground = () => {
     if (theme === 'light') {
       return isScrolled 
@@ -102,12 +112,15 @@ export default function NavbarHome({ theme, toggleTheme }: NavbarProps) {
             {/* 4. Action Icons - RIGHT SIDE */}
             <div className="flex items-center space-x-3 sm:space-x-5">
               <button
-                onClick={toggleTheme}
+                onClick={handleThemeToggle}
                 className={`p-2 rounded-full transition-colors ${
-                  theme === 'light' ? 'bg-gray-100 hover:bg-gray-200' : 'bg-gray-800 hover:bg-gray-700'
+                  theme === 'light' 
+                    ? 'bg-gray-100 hover:bg-gray-200 text-gray-800' 
+                    : 'bg-gray-800 hover:bg-gray-700 text-yellow-400'
                 }`}
+                aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
               >
-                {theme === 'dark' ? <Sun size={18} className="text-yellow-400" /> : <Moon size={18} className="text-blue-600" />}
+                {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
               </button>
 
               <NavIcon icon={<Search size={20} />} theme={theme} className="hidden xs:block" />
