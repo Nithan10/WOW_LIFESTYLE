@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, Save, Eye, Edit2, Loader2, RefreshCw, AlertCircle, CheckCircle, Type, ImageIcon, Clock, MessageSquare, Star, MapPin } from 'lucide-react';
 import Layout from '../layout/layout';
 import axios from 'axios';
-import ToyBlogLifestyle from '../../../app/about/page'; // Adjust path if needed based on where you put the frontend component
+// Updated to named import
+import ToyBlogLifestyle from '../../about/ToyBlogLifestyle';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 const axiosInstance = axios.create({ baseURL: API_URL, headers: { 'Content-Type': 'application/json' } });
@@ -111,7 +112,6 @@ export default function BlogLifestyleAdminPage() {
   return (
     <Layout>
       <div className="min-h-screen bg-gray-50 p-4 md:p-8 relative">
-        {/* Modal Logic Same As Before */}
         <AnimatePresence>
           {confirmDialog.isOpen && (
             <>

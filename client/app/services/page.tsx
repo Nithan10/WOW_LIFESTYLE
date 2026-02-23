@@ -21,7 +21,11 @@ const DEFAULT_WHOLESALE_OFFER = {
   buttonText: "APPLY 50% DISCOUNT", terms: "*Valid on orders above ₹5,00,000. Limited time offer."
 };
 
-export default function ServicesPage({ isPreview = false, previewData = null }: { isPreview?: boolean, previewData?: any }) {
+// Use 'any' to bypass Next.js strict page prop validation while allowing Admin preview props
+export default function ServicesPage(props: any) {
+  const isPreview = props.isPreview || false;
+  const previewData = props.previewData || null;
+
   const [viewMode, setViewMode] = useState<'retail' | 'wholesale'>('retail');
   const [selectedProduct, setSelectedProduct] = useState<number>(0);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
@@ -97,14 +101,12 @@ export default function ServicesPage({ isPreview = false, previewData = null }: 
   }
 
   return (
-    // FIXED: Added flex, flex-col, and min-h-screen to ensure the footer always stays at the bottom!
     <div className={`relative min-h-screen flex flex-col transition-colors duration-500 overflow-x-hidden ${
       isDarkMode ? 'bg-gradient-to-br from-slate-900 via-black to-slate-800 text-white' : 'bg-gradient-to-br from-amber-50 via-white to-yellow-50 text-slate-900'
     }`}>
       
       {!isPreview && <Navbar theme={theme} toggleTheme={toggleTheme} />}
 
-      {/* FIXED: flex-grow ensures this takes up the available space, pushing the footer down */}
       <div className={`flex-grow ${isPreview ? 'py-12' : 'pt-24 pb-12'} px-4 md:px-8`}>
         <div className="max-w-7xl mx-auto mb-12">
           
@@ -240,81 +242,81 @@ export default function ServicesPage({ isPreview = false, previewData = null }: 
               </div>
             </div>
 
-            {/* Offer Card - 1/3 width */}
+            {/* GOLD THEMED OFFER CARD */}
             <div className="lg:col-span-1">
               <AnimatePresence mode="wait">
                 <motion.div key={viewMode} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }} className="h-full">
-                  <div className={`rounded-2xl p-8 shadow-2xl text-black h-full border ${viewMode === 'retail' ? 'bg-gradient-to-br from-yellow-400 via-amber-500 to-yellow-600 shadow-yellow-500/30 border-yellow-300' : 'bg-gradient-to-br from-amber-500 via-yellow-500 to-amber-600 shadow-amber-500/30 border-amber-400'}`}>
+                  <div className={`rounded-2xl p-8 shadow-2xl text-black h-full border ${viewMode === 'retail' ? 'bg-gradient-to-br from-[#D4AF37] via-[#FFD700] to-[#B8860B] shadow-yellow-500/30 border-[#D4AF37]' : 'bg-gradient-to-br from-[#B8860B] via-[#D4AF37] to-[#8B7355] shadow-amber-900/30 border-[#B8860B]'}`}>
                     <div className="flex flex-col h-full">
                       {/* Badge */}
                       <div className="flex items-center gap-2 mb-6">
                         <div className="w-6 h-6 rounded-full bg-black/20 flex items-center justify-center">
-                          {viewMode === 'retail' ? <Crown className="w-4 h-4" /> : <TrendingUp className="w-4 h-4" />}
+                          {viewMode === 'retail' ? <Crown className="w-4 h-4 text-black" /> : <TrendingUp className="w-4 h-4 text-black" />}
                         </div>
-                        <span className="text-sm font-black uppercase tracking-[0.3em] opacity-90">{currentOffer.badgeText}</span>
+                        <span className="text-sm font-black uppercase tracking-[0.3em] text-black/90">{currentOffer.badgeText}</span>
                       </div>
                       
                       {/* Main Offer Title */}
                       <div className="mb-8 text-center">
                         <div className="relative">
-                          <div className="text-8xl font-black mb-2 leading-none">{currentOffer.discountPercentage}<span className="text-5xl">%</span></div>
+                          <div className="text-8xl font-black mb-2 leading-none text-black">{currentOffer.discountPercentage}<span className="text-5xl">%</span></div>
                           <div className="absolute -top-2 -right-2">
                             {viewMode === 'retail' ? <Sparkles className="w-8 h-8 text-black/30" /> : <Zap className="w-8 h-8 text-black/30" />}
                           </div>
                         </div>
-                        <div className="text-2xl font-black mb-2 tracking-tight">{currentOffer.title}</div>
-                        <p className="text-black/80 text-sm font-medium opacity-90">{currentOffer.description}</p>
+                        <div className="text-2xl font-black mb-2 tracking-tight text-black">{currentOffer.title}</div>
+                        <p className="text-black/80 text-sm font-medium">{currentOffer.description}</p>
                       </div>
 
                       {/* Dynamic Perks */}
                       <div className="space-y-4 mb-8">
                         <div className="flex items-center gap-4 p-4 bg-black/10 rounded-xl backdrop-blur-sm">
-                          <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center"><CheckCircle className="w-5 h-5" /></div>
-                          <div><div className="font-bold">{currentOffer.perk1?.title}</div><div className="text-sm opacity-90">{currentOffer.perk1?.desc}</div></div>
+                          <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center"><CheckCircle className="w-5 h-5 text-black" /></div>
+                          <div><div className="font-bold text-black">{currentOffer.perk1?.title}</div><div className="text-sm text-black/90">{currentOffer.perk1?.desc}</div></div>
                         </div>
                         <div className="flex items-center gap-4 p-4 bg-black/10 rounded-xl backdrop-blur-sm">
                           <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center">
-                            {viewMode === 'retail' ? <Clock className="w-5 h-5" /> : <Package className="w-5 h-5" />}
+                            {viewMode === 'retail' ? <Clock className="w-5 h-5 text-black" /> : <Package className="w-5 h-5 text-black" />}
                           </div>
-                          <div><div className="font-bold">{currentOffer.perk2?.title}</div><div className="text-sm opacity-90">{currentOffer.perk2?.desc}</div></div>
+                          <div><div className="font-bold text-black">{currentOffer.perk2?.title}</div><div className="text-sm text-black/90">{currentOffer.perk2?.desc}</div></div>
                         </div>
                         <div className="flex items-center gap-4 p-4 bg-black/10 rounded-xl backdrop-blur-sm">
                           <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center">
-                            {viewMode === 'retail' ? <Gift className="w-5 h-5" /> : <Users className="w-5 h-5" />}
+                            {viewMode === 'retail' ? <Gift className="w-5 h-5 text-black" /> : <Users className="w-5 h-5 text-black" />}
                           </div>
-                          <div><div className="font-bold">{currentOffer.perk3?.title}</div><div className="text-sm opacity-90">{currentOffer.perk3?.desc}</div></div>
+                          <div><div className="font-bold text-black">{currentOffer.perk3?.title}</div><div className="text-sm text-black/90">{currentOffer.perk3?.desc}</div></div>
                         </div>
                       </div>
 
                       {/* Selected Product Info */}
                       {currentProducts[selectedProduct] && (
-                        <div className="mt-6 p-4 bg-black/15 rounded-xl backdrop-blur-sm border border-black/20">
-                          <div className="text-xs font-black uppercase tracking-widest mb-3 opacity-80">SELECTED PRODUCT</div>
-                          <div className="flex items-center justify-between">
+                        <div className="mt-6 p-4 bg-white/20 rounded-xl backdrop-blur-md border border-white/30">
+                          <div className="text-xs font-black uppercase tracking-widest mb-3 text-black/70">SELECTED PRODUCT</div>
+                          <div className="flex items-center justify-between text-black">
                             <div className="max-w-[60%]">
                               <div className="font-bold text-lg truncate">{currentProducts[selectedProduct].name}</div>
-                              {viewMode === 'retail' && <div className="text-sm opacity-90">{currentProducts[selectedProduct].category}</div>}
+                              {viewMode === 'retail' && <div className="text-sm opacity-80">{currentProducts[selectedProduct].category}</div>}
                             </div>
                             <div className="text-right">
                               <div className="text-2xl font-black">{currentProducts[selectedProduct].price}</div>
                               {viewMode === 'retail' && currentProducts[selectedProduct].originalPrice && (
-                                <div className="text-sm line-through opacity-80">{currentProducts[selectedProduct].originalPrice}</div>
+                                <div className="text-sm line-through opacity-70">{currentProducts[selectedProduct].originalPrice}</div>
                               )}
                               {viewMode === 'wholesale' && (
-                                <div className="text-sm opacity-80 font-medium">MOQ: {currentProducts[selectedProduct].moq}</div>
+                                <div className="text-sm opacity-70 font-medium">MOQ: {currentProducts[selectedProduct].moq}</div>
                               )}
                             </div>
                           </div>
                         </div>
                       )}
 
-                      {/* CTA Button */}
-                      <button className="mt-auto w-full py-4 bg-black text-yellow-400 font-black rounded-xl hover:bg-slate-900 transition-all flex items-center justify-center gap-3 group shadow-lg hover:scale-[1.02]">
+                      {/* CTA Button - Solid Dark for contrast against Gold */}
+                      <button className="mt-auto w-full py-4 bg-black text-[#D4AF37] font-black rounded-xl hover:bg-slate-900 transition-all flex items-center justify-center gap-3 group shadow-xl hover:scale-[1.02]">
                         {viewMode === 'retail' ? <Sparkles className="w-5 h-5" /> : <Zap className="w-5 h-5" />} 
                         {currentOffer.buttonText} 
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
                       </button>
-                      <div className="text-xs text-center opacity-75 mt-4 font-medium">
+                      <div className="text-xs text-center text-black/60 mt-4 font-medium italic">
                         {currentOffer.terms}
                       </div>
                     </div>

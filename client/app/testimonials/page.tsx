@@ -45,7 +45,11 @@ const MarqueeRow = ({ items, duration, reverse = false }: { items: any[]; durati
   );
 };
 
-export default function EnhancedTestimonials({ isPreview = false, previewData = null }: { isPreview?: boolean, previewData?: any }) {
+// Fixed the signature to props: any to satisfy Next.js page requirements
+export default function EnhancedTestimonials(props: any) {
+  const isPreview = props.isPreview || false;
+  const previewData = props.previewData || null;
+
   const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [data, setData] = useState<any>(null);

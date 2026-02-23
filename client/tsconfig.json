@@ -35,7 +35,7 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "app/api-services/trendingApi.js"  ],
+, "app/api-services/trendingApi.js", ".next/types/app/about/page.tsx"  ],
   "exclude": [
     "node_modules"
   ]

@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import './Layout.css';
 
 export default function Sidebar() {
   const router = useRouter();
+  const pathname = usePathname(); // Added to track the current URL
   const [activeItem, setActiveItem] = useState('Dashboard');
   const [isPortfolioOpen, setIsPortfolioOpen] = useState(true);
 
@@ -28,7 +29,7 @@ export default function Sidebar() {
         { name: 'Services/Products', icon: '🛍️', path: '/admin/services' },
         { name: 'Contact Form', icon: '📬', path: '/admin/contact' },
         { name: 'Blog & Lifestyle', icon: '📝', path: '/admin/blog-lifestyle' },
-        { name: 'Testimonials', icon: '�', path: '/admin/testimonials' }  // <-- Added Testimonials
+        { name: 'Testimonials', icon: '🗣️', path: '/admin/testimonials' } // FIXED: Replaced  with 🗣️
       ]
     },
     { name: 'Analytics', icon: '📈', path: '/admin/analytics' },
@@ -37,15 +38,34 @@ export default function Sidebar() {
     { name: 'Settings', icon: '⚙️', path: '/admin/settings' },
   ];
 
+  // Auto-sync the sidebar's active item based on the current URL
+  useEffect(() => {
+    if (!pathname) return;
+
+    for (const item of menuItems) {
+      if (item.path === pathname) {
+        setActiveItem(item.name);
+        break;
+      }
+      if (item.subItems) {
+        const matchingSubItem = item.subItems.find(sub => sub.path === pathname);
+        if (matchingSubItem) {
+          setActiveItem(matchingSubItem.name);
+          setIsPortfolioOpen(true); // Keep portfolio open if we are on a child route
+          break;
+        }
+      }
+    }
+  }, [pathname]);
+
   const handleItemClick = (item: any) => {
-    // 1. Handle Submenu Toggling
+    // 1. Handle Submenu Toggling (Folders)
     if (item.subItems) {
       setIsPortfolioOpen(!isPortfolioOpen);
       return; 
     }
     
-    // 2. Handle Navigation and Active State
-    setActiveItem(item.name);
+    // 2. Handle Navigation
     if (item.path) {
       router.push(item.path);
     }
@@ -64,7 +84,7 @@ export default function Sidebar() {
         {menuItems.map((item) => (
           <React.Fragment key={item.name}>
             <li 
-              className={`nav-item ${activeItem === item.name ? 'active' : ''}`}
+              className={`nav-item ${activeItem === item.name && !item.subItems ? 'active' : ''}`}
               onClick={() => handleItemClick(item)}
             >
               <span className="nav-icon">{item.icon}</span>
@@ -116,7 +136,7 @@ export default function Sidebar() {
             <p>john@company.com</p>
           </div>
         </div>
-        <div className="nav-item" style={{ marginTop: '5px', color: '#ef4444', border: 'none' }}>
+        <div className="nav-item" style={{ marginTop: '5px', color: '#ef4444', border: 'none', cursor: 'pointer' }}>
           <span className="nav-icon">🚪</span>
           <span>Logout</span>
         </div>
